@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"huangru.coding.net","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="前端项目的环境及脚手架多种多样，也形成了各种生态体系。目前主流的三大前端生态 React、Vue、Angular，Vue 和 Angular 是用于构建 Web 应用程序的两个顶级 JavaScript 框架，好处在于可以快捷构建项目。React 相对于这两个框架来说其实并不算框架，只能将它看做一个灵活多变的视图层脚手架，所以要想将它完整的构建成一个框架还需要我们配合其生态圈的各种插件来实现数据绑">
+<meta property="og:type" content="article">
+<meta property="og:title" content="前端 Webpack + Backbone + React 项目环境集成">
+<meta property="og:url" content="https://huangru.coding.net/2019/06/05/webpack-backbone-react/index.html">
+<meta property="og:site_name" content="JackHan">
+<meta property="og:description" content="前端项目的环境及脚手架多种多样，也形成了各种生态体系。目前主流的三大前端生态 React、Vue、Angular，Vue 和 Angular 是用于构建 Web 应用程序的两个顶级 JavaScript 框架，好处在于可以快捷构建项目。React 相对于这两个框架来说其实并不算框架，只能将它看做一个灵活多变的视图层脚手架，所以要想将它完整的构建成一个框架还需要我们配合其生态圈的各种插件来实现数据绑">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://images.cnblogs.com/cnblogs_com/nuysoft/201203/201203180243287169.png">
+<meta property="og:image" content="http://seo-1255598498.file.myqcloud.com/full/303368f0933da6f35f33151db7dfa28e07ee34cb.jpg">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/4543156-f5a9468cb0bdb5c3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/807/format/webp">
+<meta property="og:image" content="http://images.cnitblog.com/blog2015/622439/201505/072132381261891.png">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/3534846-9bccc7c8199bc188.png">
+<meta property="article:published_time" content="2019-06-05T12:38:52.000Z">
+<meta property="article:modified_time" content="2022-02-24T07:32:33.555Z">
+<meta property="article:author" content="hr">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://images.cnblogs.com/cnblogs_com/nuysoft/201203/201203180243287169.png">
+
+<link rel="canonical" href="https://huangru.coding.net/2019/06/05/webpack-backbone-react/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>前端 Webpack + Backbone + React 项目环境集成 | JackHan</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">JackHan</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://huangru.coding.net/2019/06/05/webpack-backbone-react/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/lufei.gif">
+      <meta itemprop="name" content="hr">
+      <meta itemprop="description" content="记录个人的点点滴滴">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="JackHan">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          前端 Webpack + Backbone + React 项目环境集成
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-06-05 20:38:52" itemprop="dateCreated datePublished" datetime="2019-06-05T20:38:52+08:00">2019-06-05</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-02-24 15:32:33" itemprop="dateModified" datetime="2022-02-24T15:32:33+08:00">2022-02-24</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/WEB/" itemprop="url" rel="index"><span itemprop="name">WEB</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>前端项目的环境及脚手架多种多样，也形成了各种生态体系。目前主流的三大前端生态 React、Vue、Angular，Vue 和 Angular 是用于构建 Web 应用程序的两个顶级 JavaScript 框架，好处在于可以快捷构建项目。React 相对于这两个框架来说其实并不算框架，只能将它看做一个灵活多变的视图层脚手架，所以要想将它完整的构建成一个框架还需要我们配合其生态圈的各种插件来实现数据绑定，最常用的如 Flux、Redux、Mobx。目前我们基本采用的就是 React + Redux 的组合形式构成了一个 基本的 MVC 或者 MVVM 的框架来构建我们的项目应用。正因为它单独用作视图渲染的虚拟 Dom 单向数据流体系，让我们可以将它作为视图层的插件来集成到我们的 Backbone 项目之中，让我们老的 Backbone 项目也可以集成 React 组件化的开发。</p>
+<span id="more"></span>
+
+<h1 id="Backbone-Marionette-背景介绍"><a href="#Backbone-Marionette-背景介绍" class="headerlink" title="Backbone + Marionette 背景介绍"></a>Backbone + Marionette 背景介绍</h1><p>Backbone 是一个 MV 框架，它可以将数据呈现为 Model，同时提供了 Model 的集合 Collection。Backbone 有属于自己的 View，通过绑定视图的 render 函数到模型的 “change” 事件 — 模型数据会即时的显示在 UI 中。<br>Marionette 可以看做是因 Backbone 所衍生的一个视图层插件，为 Backbone 提供模板视图绑定。不用显式定义 render 方法，而是由 ItemView 本身完成将数据渲染到模板，并将视图追加到 el，减少了很多流程化的操作。同时 Marionette 还有很多事件和回调方法如：onBeforeRender、onRender、onBeforeDestroy、onDestroy、onShow 等，这些方法就形成了 Backbone 项目的生命周期，我们可以在这些生命周期函数中处理相关逻辑。</p>
+<p><img src="https://images.cnblogs.com/cnblogs_com/nuysoft/201203/201203180243287169.png"></p>
+<h1 id="React-视图"><a href="#React-视图" class="headerlink" title="React 视图"></a>React 视图</h1><p>React 是用 JavaScript 构建快速响应的大型 Web 应用程序的首选方式，React 应用程序的组成部分：元素和组件。React 采用虚拟 Dom 的模式，通过 jsx 的语法糖让 UI 和数据直接关联，而不像传统的 Html 和 Js 一样必须分开通过操作 Html 节点来渲染 Model 数据，而是直接在同一个组件中直接通过匹配 state 来渲染 Model 到 UI 中，这样就可以从属性操作、事件处理和手动 DOM 更新这些在构建应用程序时必要的操作中解放出来。</p>
+<p>注：虚拟 Dom 是一种编程概念。在这个概念里， UI 以一种理想化的，或者说“虚拟的”表现形式被保存于内存中，并通过如 ReactDOM 等类库使之与“真实的” DOM 同步。这一过程叫做协调。</p>
+<p>首先，我们需要了解一下 React 的工作原理，如图：</p>
+<p><img src="http://seo-1255598498.file.myqcloud.com/full/303368f0933da6f35f33151db7dfa28e07ee34cb.jpg"></p>
+<p>React 是由单向接收数据流改变虚拟 Dom，并根据虚拟 Dom 的差异化来批量渲染真是 Dom 的过程。</p>
+<p>其次，我们需要了解一下 React 的生命周期，如图：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/4543156-f5a9468cb0bdb5c3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/807/format/webp"></p>
+<p>最好，就是 React 的核心，组件：</p>
+<p><img src="http://images.cnitblog.com/blog2015/622439/201505/072132381261891.png"></p>
+<h1 id="Webpack"><a href="#Webpack" class="headerlink" title="Webpack"></a>Webpack</h1><p>webpack 是一个现代 JavaScript 应用程序的静态模块打包器。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/3534846-9bccc7c8199bc188.png"></p>
+<p>首先安装 webpack</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install webpack --save</span><br></pre></td></tr></table></figure>
+
+<p>接下来创建 webpack.config.js 文件，并在文件中输出且使用。</p>
+<p>webpack 最重要是下面的四个概念：</p>
+<p>1、入口(entry)</p>
+<p>即 webpack 应该使用哪个模块，来作为构建其内部依赖图的开始。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">var env = process.env.BUILD_ENV ? process.env.BUILD_ENV : &quot;none&quot;;</span><br><span class="line">var entry = &quot;./env/env-config/&quot; + env + &quot;.js&quot;;</span><br><span class="line">entry: [entry, &quot;./assets/src/app.styles.js&quot;, &quot;./assets/src/app.js&quot;]</span><br></pre></td></tr></table></figure>
+
+<p>一般来说单页面应用的入口文件即 app.js，这里引入 env.js 和 styles.js 是兼容 gulp 中配置环境变量及全局样式的处理。webpack 本身提供的直接在编辑时处理环境变量的方法。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">new webpack.DefinePlugin(&#123;</span><br><span class="line">  &quot;process.env&quot;: &#123;</span><br><span class="line">    NODE_ENV: JSON.stringify(&quot;production&quot;)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;),</span><br></pre></td></tr></table></figure>
+
+<p>2、输出(output)</p>
+<p>输出项目并打包 js 文件。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">output: &#123;</span><br><span class="line">  path: path.join(__dirname, &quot;../public/assets/&quot;),</span><br><span class="line">  filename: &quot;javascripts/bundle.js&quot;</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+
+<p>3、loader</p>
+<p>在输出规则中配置的加载器。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">module: &#123;</span><br><span class="line">  rules: []</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+
+<p>4、插件(plugins)</p>
+<p>帮助我们在打包过程中实现压缩、环境配置、三方库引用、文件复制等一系列操作的工具。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">plugins: []</span><br></pre></td></tr></table></figure>
+
+<p>上面简单讲述了关于 webpack 的一些主要概念，接下来进入真正的项目构建及 react 兼容过程。</p>
+<h1 id="引入-React-配置-Webpack"><a href="#引入-React-配置-Webpack" class="headerlink" title="引入 React 配置 Webpack"></a>引入 React 配置 Webpack</h1><p>在配置了入口和输出路劲之后，我们开始正式配置 loader 及 plugin。React 既可以工作在 ES6 环境中也可以工作在 ES5 环境中，目前主流的应用都是采用 ES6 甚至 ES7 的 JavaScript 语法标准，其本质都是将其语法最终在浏览器输出为 ES5 的标准来加载渲染。所以这里就需要我们配置相关 loader 来实现它。</p>
+<p>1、安装 react react-dom prop-types 到项目基本库中</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install react react-dom prop-types --save</span><br></pre></td></tr></table></figure>
+
+<p>安装 react 核心库，react-dom 是供我们获取真实 dom 以及 react 本身将虚拟 dom 和真实 dom 进行同步的库，prop-types 是 react 一个定义原型链属性、类型、默认值的库</p>
+<p>2、安装 <a href="mailto:&#x62;&#x61;&#x62;&#x65;&#x6c;&#x2d;&#108;&#x6f;&#97;&#x64;&#101;&#114;&#x40;&#56;&#x2e;&#x30;&#x2e;&#48;&#x2d;&#x62;&#x65;&#x74;&#97;&#x2e;&#x30;">&#x62;&#x61;&#x62;&#x65;&#x6c;&#x2d;&#108;&#x6f;&#97;&#x64;&#101;&#114;&#x40;&#56;&#x2e;&#x30;&#x2e;&#48;&#x2d;&#x62;&#x65;&#x74;&#97;&#x2e;&#x30;</a> @babel&#x2F;core @babel&#x2F;preset-env @babel&#x2F;preset-react 到依赖库中，并创建 .babelrc 文件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install babel-loader@8.0.0-beta.0 @babel/core @babel/preset-env @babel/preset-react --save-dev</span><br></pre></td></tr></table></figure>
+
+<p>bale-loader 是专门用来将 ES5 及其以上 JavaScript 语法标准转换为 ES5 的加载器，其核心为 @babel&#x2F;core，@babel&#x2F;preset-env 和 @babel&#x2F;preset-react 是将 bale 转换定义为预设转换指定环境及 react 环境，这里的指定环境一般为标准环境。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;presets&quot;: [&quot;@babel/preset-env&quot;, &quot;@babel/preset-react&quot;],</span><br><span class="line">  &quot;plugins&quot;: []</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// .babelrc</span><br></pre></td></tr></table></figure>
+
+<p>3、配置 babel-loader 到 webpack 中</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  test: /.(js|jsx)\$/,</span><br><span class="line">  loader: &quot;babel-loader?cacheDirectory=true&quot;,</span><br><span class="line">  exclude: /node_modules/</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>编译时自动匹配 js 或者 jsx 文件进行 babel 转换并缓存，同时忽略转换 node_modules 库。这里 cacheDirectory&#x3D;true 在我们进行转换过程中会优先读取缓存中的转换结果并差异化新的转换文件，这样可以提高我们的语法转换速度。</p>
+<p>4、安装 @babel&#x2F;runtime 或者 @babel&#x2F;runtime-corejs2</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install @babel/runtime --save-dev 或者 npm install @babel/runtime-corejs2 --save-dev</span><br></pre></td></tr></table></figure>
+
+<p>这两个插件都是 polyfill 包，及转换过程中的语法规则补全库，因为 babel 默认只转换标准 ES 语法规则，所以我们在项目中可能用到的一些非标准语法规则比如 Object.assign 无法转换，所以就需要这个补全插件来帮我们实现转换。</p>
+<p>注：@babel&#x2F;runtime 插件是全局引入，使用这个插件会侵入全局变量，相对来说 @babel&#x2F;runtime-corejs2 不会侵入改变全局变量，所以我们这里安装后者。</p>
+<p>5、安装 @babel&#x2F;plugin-transform-runtime</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install @babel/plugin-transform-runtime --save-dev</span><br></pre></td></tr></table></figure>
+
+<p>@babel&#x2F;plugin-transform-runtime 和 @babel&#x2F;runtime 是相互匹配使用的。这个插件引用 @babel&#x2F;runtime 中的 polyfill 进行 es6 向 es5 转化时自动补充 es5 不支持的特性。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;presets&quot;: [&quot;@babel/preset-env&quot;, &quot;@babel/preset-react&quot;],</span><br><span class="line">  &quot;plugins&quot;: [</span><br><span class="line">    [&quot;@babel/plugin-transform-runtime&quot;, &#123; &quot;corejs&quot;: 2 &#125;]</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// .babelrc</span><br></pre></td></tr></table></figure>
+
+<p>6、兼容 ES7 标准</p>
+<p>因为目前的 babel7 不再支持 @babel&#x2F;preset-stage-0 等阶段预设。所以我们需要安装相应插件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;plugins&quot;: [</span><br><span class="line">    // Stage 0</span><br><span class="line">    &quot;@babel/plugin-proposal-function-bind&quot;,  // 函数绑定</span><br><span class="line"> </span><br><span class="line">    // Stage 1</span><br><span class="line">    &quot;@babel/plugin-proposal-export-default-from&quot;,</span><br><span class="line">    &quot;@babel/plugin-proposal-logical-assignment-operators&quot;,</span><br><span class="line">    [&quot;@babel/plugin-proposal-optional-chaining&quot;, &#123; &quot;loose&quot;: false &#125;],</span><br><span class="line">    [&quot;@babel/plugin-proposal-pipeline-operator&quot;, &#123; &quot;proposal&quot;: &quot;minimal&quot; &#125;],</span><br><span class="line">    [&quot;@babel/plugin-proposal-nullish-coalescing-operator&quot;, &#123; &quot;loose&quot;: false &#125;],</span><br><span class="line">    &quot;@babel/plugin-proposal-do-expressions&quot;,</span><br><span class="line"> </span><br><span class="line">    // Stage 2</span><br><span class="line">    [&quot;@babel/plugin-proposal-decorators&quot;, &#123; &quot;legacy&quot;: true &#125;], // 装饰器</span><br><span class="line">    &quot;@babel/plugin-proposal-function-sent&quot;,</span><br><span class="line">    &quot;@babel/plugin-proposal-export-namespace-from&quot;,</span><br><span class="line">    &quot;@babel/plugin-proposal-numeric-separator&quot;,</span><br><span class="line">    &quot;@babel/plugin-proposal-throw-expressions&quot;,</span><br><span class="line"> </span><br><span class="line">    // Stage 3</span><br><span class="line">    &quot;@babel/plugin-syntax-dynamic-import&quot;, // 语法动态引入</span><br><span class="line">    &quot;@babel/plugin-syntax-import-meta&quot;,</span><br><span class="line">    [&quot;@babel/plugin-proposal-class-properties&quot;, &#123; &quot;loose&quot;: false &#125;], // 解析类的属性</span><br><span class="line">    &quot;@babel/plugin-proposal-json-strings&quot;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面列举了 ES7 从 Stag0 到 Stage3 四个阶段的插件。这里我们安装我们常用的</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install @babel/plugin-syntax-dynamic-import @babel/plugin-proposal-function-bind @babel/plugin-transform-object-assign @babel/plugin-proposal-decorators @babel/plugin-proposal-class-properties @babel/plugin-transform-arrow-functions --save-dev</span><br></pre></td></tr></table></figure>
+
+<p>注：这里单独说明下因为我们的项目比较旧，不支持箭头函数，虽然经过上面的转换我们可以在 react 中使用箭头函数，但是在原始项目中依然不能，所以需要单独引入 @babel&#x2F;plugin-transform-arrow-functions 来转换 ES5 中的箭头函数</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;presets&quot;: [&quot;@babel/preset-env&quot;, &quot;@babel/preset-react&quot;],</span><br><span class="line">  &quot;plugins&quot;: [</span><br><span class="line">    &quot;@babel/plugin-syntax-dynamic-import&quot;,</span><br><span class="line">    &quot;@babel/plugin-proposal-function-bind&quot;,</span><br><span class="line">    [&quot;@babel/plugin-transform-runtime&quot;, &#123; &quot;corejs&quot;: 2 &#125;],</span><br><span class="line">    &quot;@babel/plugin-transform-object-assign&quot;,</span><br><span class="line">    [&quot;@babel/plugin-proposal-decorators&quot;, &#123; &quot;legacy&quot;: true &#125;],</span><br><span class="line">    &quot;@babel/plugin-proposal-class-properties&quot;,</span><br><span class="line">    &quot;@babel/plugin-transform-arrow-functions&quot;,</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// .babelrc</span><br></pre></td></tr></table></figure>
+
+<p>7、严格模式</p>
+<p>因为我们的项目比较老，所以 babel 默认的严格模式开启的情况下，很多语法并不支持所以我们还需要关闭严格模式</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">npm install @babel/plugin-transform-modules-commonjs --save-dev</span><br><span class="line"></span><br><span class="line">&#123;</span><br><span class="line">  &quot;presets&quot;: [&quot;@babel/preset-env&quot;, &quot;@babel/preset-react&quot;],</span><br><span class="line">  &quot;plugins&quot;: [</span><br><span class="line">    &quot;@babel/plugin-syntax-dynamic-import&quot;,</span><br><span class="line">    &quot;@babel/plugin-proposal-function-bind&quot;,</span><br><span class="line">    [&quot;@babel/plugin-transform-runtime&quot;, &#123; &quot;corejs&quot;: 2 &#125;],</span><br><span class="line">    &quot;@babel/plugin-transform-object-assign&quot;,</span><br><span class="line">    [&quot;@babel/plugin-proposal-decorators&quot;, &#123; &quot;legacy&quot;: true &#125;],</span><br><span class="line">    &quot;@babel/plugin-proposal-class-properties&quot;,</span><br><span class="line">    &quot;@babel/plugin-transform-arrow-functions&quot;,</span><br><span class="line">    [</span><br><span class="line">      &quot;@babel/plugin-transform-modules-commonjs&quot;,</span><br><span class="line">      &#123;</span><br><span class="line">        &quot;strictMode&quot;: false</span><br><span class="line">      &#125;</span><br><span class="line">    ]</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// .babelrc</span><br></pre></td></tr></table></figure>
+
+<p>到这里位置，我们解决了兼容语法转换的问题，基本就算完成环境配置的一半了，我们引入 React 之后还需要引入 UI 库 antd，所以最终配置如下。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">npm install antd --save</span><br><span class="line">npm install babel-plugin-import --save-dev</span><br><span class="line"></span><br><span class="line">&#123;</span><br><span class="line">  &quot;presets&quot;: [&quot;@babel/preset-env&quot;, &quot;@babel/preset-react&quot;],</span><br><span class="line">  &quot;plugins&quot;: [</span><br><span class="line">    &quot;@babel/plugin-syntax-dynamic-import&quot;,</span><br><span class="line">    &quot;@babel/plugin-proposal-function-bind&quot;,</span><br><span class="line">    [&quot;@babel/plugin-transform-runtime&quot;, &#123; &quot;corejs&quot;: 2 &#125;],</span><br><span class="line">    &quot;@babel/plugin-transform-object-assign&quot;,</span><br><span class="line">    [&quot;@babel/plugin-proposal-decorators&quot;, &#123; &quot;legacy&quot;: true &#125;],</span><br><span class="line">    &quot;@babel/plugin-proposal-class-properties&quot;,</span><br><span class="line">    &quot;@babel/plugin-transform-arrow-functions&quot;,</span><br><span class="line">    [</span><br><span class="line">      &quot;@babel/plugin-transform-modules-commonjs&quot;,</span><br><span class="line">      &#123;</span><br><span class="line">        &quot;strictMode&quot;: false</span><br><span class="line">      &#125;</span><br><span class="line">    ],</span><br><span class="line">    [</span><br><span class="line">      &quot;import&quot;,</span><br><span class="line">      &#123;</span><br><span class="line">        &quot;libraryName&quot;: &quot;antd&quot;,</span><br><span class="line">        &quot;libraryDirectory&quot;: &quot;es&quot;,</span><br><span class="line">        &quot;style&quot;: &quot;css&quot;</span><br><span class="line">      &#125;</span><br><span class="line">    ]</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// .babelrc</span><br></pre></td></tr></table></figure>
+
+<p>8、handlebars 在 Backbone 中广泛定义模板语法</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123; test: /\.hbs$/, loader: &quot;handlebars-loader&quot; &#125;</span><br></pre></td></tr></table></figure>
+
+<p>9、css、stylus、scss、less 样式定义</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  test: /\.css$/,</span><br><span class="line">  use: ExtractTextPlugin.extract(&#123;</span><br><span class="line">    fallback: &quot;style-loader&quot;,</span><br><span class="line">    use: &quot;css-loader&quot;</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;,</span><br><span class="line">&#123;</span><br><span class="line">  test: /\.styl$/,</span><br><span class="line">  use: ExtractTextPlugin.extract(&#123;</span><br><span class="line">    fallback: &quot;style-loader&quot;,</span><br><span class="line">    use: &quot;css-loader!stylus-loader&quot;</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;,</span><br><span class="line">&#123;</span><br><span class="line">  test: /\.scss$/,</span><br><span class="line">  use: ExtractTextPlugin.extract(&#123;</span><br><span class="line">    fallback: &quot;style-loader&quot;,</span><br><span class="line">    use: &quot;css-loader!sass-loader&quot;</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;,</span><br><span class="line">&#123;</span><br><span class="line">  test: /\.less$/,</span><br><span class="line">  use: ExtractTextPlugin.extract(&#123;</span><br><span class="line">    fallback: &quot;style-loader&quot;,</span><br><span class="line">    use: [</span><br><span class="line">      &#123;</span><br><span class="line">        loader: &quot;css-loader&quot;,</span><br><span class="line">        options: &#123;</span><br><span class="line">          modules: true,</span><br><span class="line">          localIdentName: &quot;[path][name]--[local]--[hash:base64:5]&quot;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;,</span><br><span class="line">      &#123; loader: &quot;less-loader&quot; &#125;</span><br><span class="line">    ]</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注：ExtractTextPlugin 插件为了帮助我们将所有样式文件导出成一个单独的 css 文件而使用</p>
+<p>10、定义 resolve</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">alias: &#123;</span><br><span class="line">  src: path.resolve(__dirname, &quot;assets/src/&quot;),</span><br><span class="line">  images: path.resolve(__dirname, &quot;assets/images/&quot;)</span><br><span class="line"></span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里将我们的文件路径和图片资源定义绝对路径，也可以在这里定义手动导入三方库的绝对路径</p>
+<p>11、配置 plugin</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">plugins: [</span><br><span class="line">  // 环境配置 （产品环境下配置）</span><br><span class="line">  new webpack.DefinePlugin(&#123;</span><br><span class="line">    &quot;process.env&quot;: &#123;</span><br><span class="line">      NODE_ENV: JSON.stringify(&quot;production&quot;)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;),</span><br><span class="line"></span><br><span class="line">  // 外部三方库全局定义引用</span><br><span class="line">  new webpack.ProvidePlugin(&#123;</span><br><span class="line">    _: &quot;lodash&quot;,</span><br><span class="line">    jQuery: &quot;jquery&quot;,</span><br><span class="line">    $: &quot;jquery&quot;,</span><br><span class="line">    Backbone: &quot;backbone&quot;,</span><br><span class="line">    Tether: &quot;tether/tether&quot;,</span><br><span class="line">    Highcharts: &quot;highcharts&quot;</span><br><span class="line">  &#125;),</span><br><span class="line"></span><br><span class="line">  // css 输出</span><br><span class="line">  new ExtractTextPlugin(&quot;stylesheets/bundle.css&quot;),</span><br><span class="line"></span><br><span class="line">  // 资源文件复用</span><br><span class="line">  new CopyWebpackPlugin([</span><br><span class="line">    &#123;</span><br><span class="line">      from: &quot;assets/images&quot;,</span><br><span class="line">      to: &quot;../static/lib/img&quot;</span><br><span class="line">    &#125;</span><br><span class="line">  ]),</span><br><span class="line"></span><br><span class="line">  // 浏览器端口代理 （开发环境下配置）</span><br><span class="line">  new BrowserSyncPlugin(&#123;</span><br><span class="line">    host: &quot;localhost&quot;,</span><br><span class="line">    port: 3001,</span><br><span class="line">    proxy: &quot;http://localhost:3000/&quot;</span><br><span class="line">  &#125;)</span><br><span class="line"></span><br><span class="line">  // 该项目在rails中进行代码压缩，所以这里就不要进行压缩了</span><br><span class="line">  // new webpack.optimize.UglifyJsPlugin(&#123;</span><br><span class="line">  //   compress: &#123;</span><br><span class="line">  //     warnings: false</span><br><span class="line">  //   &#125;</span><br><span class="line">  // &#125;)</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+
+<p>12、最后我们还需要设置 <a target="_blank" rel="noopener" href="https://webpack.docschina.org/configuration/devtool/">devTool</a> 来为我们在开发环境和产品环境输出 sourcemap 来调试</p>
+<p>development: cheap-module-eval-source-map<br>production: none(默认)</p>
+<p>到此为止项目环境兼容集成告一段落，当然还有些细节配置就不再赘述，我们的配置中也还可以再加入一些，比如 eslint 来检测规范代码，这里因项目加入 eslint 成本太高暂时先不考虑。</p>
+<h1 id="React-组件开发"><a href="#React-组件开发" class="headerlink" title="React 组件开发"></a>React 组件开发</h1><p>完成环境转换配置之后，我们终于可以进行 React 组件的开发了，我们在 Backbone 项目中进行 React 组件开发主要是将 React 的 View 层替换 Bckbone 的 template 模板</p>
+<p>引入：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">import React from &quot;react&quot;;</span><br><span class="line">import ReactDOM from &quot;react-dom&quot;;</span><br><span class="line">import SelectProduct from &quot;src/ReactComponent/SelectProduct&quot;;</span><br></pre></td></tr></table></figure>
+
+<p>在引入 React 库和组件头文件之后，我们进行渲染</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">&lt;div class=&quot;select-product-view&quot; /&gt;</span><br><span class="line"></span><br><span class="line">ui: &#123;</span><br><span class="line">  selectProductView: &quot;.select-product-view&quot;</span><br><span class="line">&#125;,</span><br><span class="line"></span><br><span class="line">mountSelectProductView: function() &#123;</span><br><span class="line">  const wrapper = this.ui.selectProductView[0];</span><br><span class="line">  ReactDOM.render(</span><br><span class="line">    &lt;SelectProduct</span><br><span class="line">      ref=&#123;this.selectProductRef&#125;</span><br><span class="line">      onChange=&#123;this.onProductChange&#125;</span><br><span class="line">    /&gt;,</span><br><span class="line">    wrapper</span><br><span class="line">  );</span><br><span class="line">&#125;,</span><br><span class="line"></span><br><span class="line">export default class SelectProduct extends React.Component &#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面简单的介绍了在环境集成之后进行 React 组件开发的基本过程。也是我们最终想要达到的目的</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/05/24/qywx2/" rel="prev" title="企业微信开发（二期）">
+      <i class="fa fa-chevron-left"></i> 企业微信开发（二期）
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/11/18/node-server/" rel="next" title="Node+Express搭建的企业微信前端服务器">
+      Node+Express搭建的企业微信前端服务器 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Backbone-Marionette-%E8%83%8C%E6%99%AF%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.</span> <span class="nav-text">Backbone + Marionette 背景介绍</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#React-%E8%A7%86%E5%9B%BE"><span class="nav-number">2.</span> <span class="nav-text">React 视图</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Webpack"><span class="nav-number">3.</span> <span class="nav-text">Webpack</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%BC%95%E5%85%A5-React-%E9%85%8D%E7%BD%AE-Webpack"><span class="nav-number">4.</span> <span class="nav-text">引入 React 配置 Webpack</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#React-%E7%BB%84%E4%BB%B6%E5%BC%80%E5%8F%91"><span class="nav-number">5.</span> <span class="nav-text">React 组件开发</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="hr"
+      src="/images/lufei.gif">
+  <p class="site-author-name" itemprop="name">hr</p>
+  <div class="site-description" itemprop="description">记录个人的点点滴滴</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/JackHan-hr" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;JackHan-hr" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:jackhan11108@139.com" title="E-Mail → mailto:jackhan11108@139.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">hr</span>
+</div>
+  <div class="powered-by">相逢有缘 | 有缘再见
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+  <script type="text/javascript" color="255,0,0" count="99" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+</body>
+</html>

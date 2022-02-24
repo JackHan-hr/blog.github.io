@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"huangru.coding.net","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="AFNetWorking作为目前使用较为广泛的一个开源的网络框架，它优秀的框架结构和简易的使用方法所带来的方便让很多ios开发者毫不犹豫的选择了使用它。相对于苹果官方自身的NSURLConnection（ios9.0后用NSURLSession取代）来说，官方的网络请求API在使用的时候不如经过AF封装过后的直接使用来得方便与灵活。下面就先来简单介绍一下官方的API的基本使用过程：">
+<meta property="og:type" content="article">
+<meta property="og:title" content="简述AFNetWorking使用以及二次封装带来的好处">
+<meta property="og:url" content="https://huangru.coding.net/2016/09/09/AFNetWorking/index.html">
+<meta property="og:site_name" content="JackHan">
+<meta property="og:description" content="AFNetWorking作为目前使用较为广泛的一个开源的网络框架，它优秀的框架结构和简易的使用方法所带来的方便让很多ios开发者毫不犹豫的选择了使用它。相对于苹果官方自身的NSURLConnection（ios9.0后用NSURLSession取代）来说，官方的网络请求API在使用的时候不如经过AF封装过后的直接使用来得方便与灵活。下面就先来简单介绍一下官方的API的基本使用过程：">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2016-09-09T12:46:24.000Z">
+<meta property="article:modified_time" content="2022-02-24T07:32:33.552Z">
+<meta property="article:author" content="hr">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://huangru.coding.net/2016/09/09/AFNetWorking/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>简述AFNetWorking使用以及二次封装带来的好处 | JackHan</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">JackHan</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://huangru.coding.net/2016/09/09/AFNetWorking/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/lufei.gif">
+      <meta itemprop="name" content="hr">
+      <meta itemprop="description" content="记录个人的点点滴滴">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="JackHan">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          简述AFNetWorking使用以及二次封装带来的好处
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-09-09 20:46:24" itemprop="dateCreated datePublished" datetime="2016-09-09T20:46:24+08:00">2016-09-09</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-02-24 15:32:33" itemprop="dateModified" datetime="2022-02-24T15:32:33+08:00">2022-02-24</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/IOS/" itemprop="url" rel="index"><span itemprop="name">IOS</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>AFNetWorking作为目前使用较为广泛的一个开源的网络框架，它优秀的框架结构和简易的使用方法所带来的方便让很多ios开发者毫不犹豫的选择了使用它。相对于苹果官方自身的NSURLConnection（ios9.0后用NSURLSession取代）来说，官方的网络请求API在使用的时候不如经过AF封装过后的直接使用来得方便与灵活。下面就先来简单介绍一下官方的API的基本使用过程：</p>
+<span id="more"></span>
+
+<h1 id="IOS-9-0之前"><a href="#IOS-9-0之前" class="headerlink" title="IOS 9.0之前"></a>IOS 9.0之前</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">一. 同步GET</span><br><span class="line">1.将网址初始化成一个字符串对象</span><br><span class="line">NSString *urlStr = [NSString StringWithFormat:@&quot;%@/attachment/uuid/%@&quot;,UUID];</span><br><span class="line">2.如果网址中存在中文,进行URLEncode</span><br><span class="line">NSString *newUrlStr = [urlStr stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];</span><br><span class="line">3.构建网络URL对象, NSURL</span><br><span class="line">NSURL *url = [NSURL URLWithString:newUrlStr];</span><br><span class="line">4.创建网络请求</span><br><span class="line">NSURLRequest *request = [NSURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:15];</span><br><span class="line">5.创建同步链接</span><br><span class="line">NSURLResponse *response = nil;</span><br><span class="line">NSError *error = nil;</span><br><span class="line">NSData *data = [NSURLConnection sendSynchronousRequest:request returningResponse:&amp;response error:&amp;error];</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">二.同步POST</span><br><span class="line"> 1.根据网址初始化OC字符串对象</span><br><span class="line">    NSString *urlStr = [NSString stringWithFormat:@&quot;%@&quot;, URL];</span><br><span class="line"> 2.创建NSURL对象</span><br><span class="line">    NSURL *url = [NSURL URLWithString:urlStr];</span><br><span class="line">  3.创建请求</span><br><span class="line">    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];</span><br><span class="line"> 4.创建参数字符串对象</span><br><span class="line">    NSString *parmStr = @&quot;pageIndex=1&amp;pageSize=10&quot;;</span><br><span class="line"> 5.将字符串转为NSData对象</span><br><span class="line">    NSData *pramData = [parmStr dataUsingEncoding:NSUTF8StringEncoding];</span><br><span class="line"> 6.设置请求体</span><br><span class="line">    [request setHTTPBody:pramData];</span><br><span class="line"> 7.设置请求方式</span><br><span class="line">    [request setHTTPMethod:@&quot;POST&quot;];</span><br><span class="line"> 8.创建同步链接</span><br><span class="line">NSURLResponse *response = nil;</span><br><span class="line">NSError *error = nil;</span><br><span class="line">NSData *data = [NSURLConnection sendSynchronousRequest:request returningResponse:&amp;response error:&amp;error];</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">三.异步GET</span><br><span class="line">NSString *urlStr = [NSString stringWithFormat:@&quot;http://pic4.nipic.com/20090910/2302530_144753008092_2.jpg&quot;];</span><br><span class="line">NSString *newStr = [urlStr stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];</span><br><span class="line">NSURL *url = [NSURL URLWithString:newStr];</span><br><span class="line">NSURLRequest *requst = [NSURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];</span><br><span class="line">异步链接</span><br><span class="line"> [NSURLConnection sendAsynchronousRequest:requst queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) &#123;</span><br><span class="line">    self.imageView.image = [UIImage imageWithData:data];</span><br><span class="line">    // 解析</span><br><span class="line">    NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:nil];</span><br><span class="line">    NSLog(@&quot;%@&quot;, dic);</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">四.异步POST</span><br><span class="line"> 1.POST请求</span><br><span class="line">    NSString *urlString = [NSString stringWithFormat:@&quot;%@&quot;,URL];</span><br><span class="line"> 2.创建url对象</span><br><span class="line">    NSURL *url = [NSURL URLWithString:urlString];</span><br><span class="line"> 3.创建请求</span><br><span class="line">    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:15];</span><br><span class="line"> 4.创建参数字符串对象</span><br><span class="line">    NSString *parmStr = [NSString stringWithFormat:@&quot;pageIndex=1&amp;pageSize=10&quot;];</span><br><span class="line"> 5.将字符串转换为NSData对象</span><br><span class="line">    NSData *data = [parmStr dataUsingEncoding:NSUTF8StringEncoding];</span><br><span class="line">    [request setHTTPBody:data];</span><br><span class="line">    [request setHTTPMethod:@&quot;POST&quot;];</span><br><span class="line"> 6.创建异步连接</span><br><span class="line">    [NSURLConnection connectionWithRequest:request delegate:self];</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">NSURLConnectionDataDelegate经常使用到的代理方法：</span><br><span class="line">1.服务器接收到请求时</span><br><span class="line">- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response;</span><br><span class="line">2.当收到服务器返回的数据时触发, 返回的可能是资源片段</span><br><span class="line">- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data;</span><br><span class="line">3.当服务器返回所有数据时触发, 数据返回完毕</span><br><span class="line">- (void)connectionDidFinishLoading:(NSURLConnection *)connection;</span><br><span class="line">4.请求数据失败时触发</span><br><span class="line">- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error;</span><br></pre></td></tr></table></figure>
+
+<h1 id="IOS-9-0之后"><a href="#IOS-9-0之后" class="headerlink" title="IOS 9.0之后"></a>IOS 9.0之后</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">一.GET请求</span><br><span class="line">1.快捷方式获得session对象</span><br><span class="line">NSString *urlStr = [NSString StringWithFormat:@&quot;%@/attachment/uuid/%@&quot;,UUID];</span><br><span class="line">NSURLSession *session = [NSURLSession sharedSession];</span><br><span class="line">NSURL *url = [NSURL URLWithString:urlStr];</span><br><span class="line">2.通过URL初始化task,在block内部可以直接对返回的数据进行处理</span><br><span class="line">NSURLSessionTask *task = [session dataTaskWithURL:url</span><br><span class="line">                               completionHandler:^(NSData *data, NSURLResponse *response, NSError error) &#123;</span><br><span class="line">    NSLog(@&quot;%@&quot;, [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:nil]);</span><br><span class="line">&#125;];</span><br><span class="line">3.启动任务</span><br><span class="line">[task resume];</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">二.POST请求</span><br><span class="line">1.创建请求</span><br><span class="line">NSURL *url = [NSURL URLWithString:@&quot;http://pic4.nipic.com/20090910/2302530_144753008092_2.jpg&quot;];</span><br><span class="line">NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];</span><br><span class="line">request.HTTPMethod = @&quot;POST&quot;;</span><br><span class="line">request.HTTPBody = [@&quot;username=daka&amp;pwd=123&quot; dataUsingEncoding:NSUTF8StringEncoding];</span><br><span class="line">NSURLSession *session = [NSURLSession sharedSession];</span><br><span class="line">2.由于要先对request先行处理,我们通过request初始化task</span><br><span class="line">NSURLSessionTask *task = [session dataTaskWithRequest:request</span><br><span class="line">                                   completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) &#123; NSLog(@&quot;%@&quot;, [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:nil]); &#125;];</span><br><span class="line">[task resume];</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">NSURLSessionDataDelegate代理方法</span><br><span class="line">1.使用代理方法需要设置代理,但是session的delegate属性是只读的,要想设置代理只能通过这种方式创建session</span><br><span class="line">NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]</span><br><span class="line">                                                      delegate:self</span><br><span class="line">                                                 delegateQueue:[[NSOperationQueue alloc] init]];</span><br><span class="line">2.创建任务(因为要使用代理方法,就不需要block方式的初始化了)</span><br><span class="line">NSURLSessionDataTask *task = [session dataTaskWithRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@&quot;http://www.loyo.com/login?userName=loyo&amp;pwd=123&quot;]]];</span><br><span class="line">3.启动任务</span><br><span class="line">[task resume];</span><br><span class="line">4.对应的代理方法如下:</span><br><span class="line">a.接收到服务器的响应</span><br><span class="line">- (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveResponse:(NSURLResponse *)response completionHandler:(void (^)(NSURLSessionResponseDisposition))completionHandler &#123;</span><br><span class="line">    // 允许处理服务器的响应，才会继续接收服务器返回的数据</span><br><span class="line">    completionHandler(NSURLSessionResponseAllow);</span><br><span class="line">&#125;</span><br><span class="line">b.接收到服务器的数据（可能调用多次）</span><br><span class="line">- (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data &#123;</span><br><span class="line">    // 处理每次接收的数据</span><br><span class="line">&#125;</span><br><span class="line">c.请求成功或者失败（如果失败，error有值）</span><br><span class="line">- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error &#123;</span><br><span class="line">    // 请求完成,成功或者失败的处理</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>好了前面是简单讲述了一下关于官方的网络请求的调用以及方法的使用，当然，在网络上也有很多这样的介绍，这里就不再详细罗列，下面来讲讲今天的核心内容<a target="_blank" rel="noopener" href="https://github.com/AFNetworking/AFNetworking">AFNetWorking</a>，这里主要介绍3.0及之后的使用方法：</p>
+<p>注：这里的code码500是代表请求错误的回调码，不一定每个网络请求的错误码都是500，这里只是用来简单举个例子，path是请求的url，params是请求的参数</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">首先将AFHTTPSessionManager 实例化成单例</span><br><span class="line"></span><br><span class="line">#import &quot;HttpTool.h&quot;</span><br><span class="line">@interface HttpTool : NSObject</span><br><span class="line"></span><br><span class="line">+ (AFHTTPSessionManager *)AFHTTPSessionManager;</span><br><span class="line"></span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">static AFHTTPSessionManager *sharedClient;</span><br><span class="line">@implementation HttpTool</span><br><span class="line"></span><br><span class="line">+ (AFHTTPSessionManager *)AFHTTPSessionManager &#123;</span><br><span class="line">    AFJSONRequestSerializer *jsonRequest = [AFJSONRequestSerializer serializer];</span><br><span class="line">    static dispatch_once_t onceToken;</span><br><span class="line">    dispatch_once(&amp;onceToken, ^&#123;</span><br><span class="line">        sharedClient = [AFHTTPSessionManager manager];</span><br><span class="line">        sharedClient.responseSerializer = [AFJSONResponseSerializer serializer];</span><br><span class="line">        [jsonRequest setValue:[DeviceInfo getSystemName] forHTTPHeaderField:@&quot;Platform&quot;];</span><br><span class="line">        [jsonRequest setValue:[DeviceInfo getDeviceModelDetail] forHTTPHeaderField:@&quot;Agent&quot;];</span><br><span class="line">    &#125;);</span><br><span class="line">    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];</span><br><span class="line">    if ([defaults objectForKey:@&quot;user_token&quot;]) &#123;</span><br><span class="line">        NSString *token = [ defaults objectForKey:@&quot;user_token&quot;];</span><br><span class="line">        [jsonRequest setValue:[NSString stringWithFormat:@&quot;Bearer %@&quot;,token] forHTTPHeaderField:@&quot;Authorization&quot;];//存入token信息</span><br><span class="line">    &#125;</span><br><span class="line">    [jsonRequest setValue:[DeviceInfo getDeviceVersion] forHTTPHeaderField:@&quot;OSVersion&quot;];</span><br><span class="line">    [jsonRequest setValue:[DeviceInfo getVersionName] forHTTPHeaderField:@&quot;VersionName&quot;];</span><br><span class="line">    [jsonRequest setValue:[DeviceInfo getVersionCode] forHTTPHeaderField:@&quot;VersionCode&quot;];</span><br><span class="line">    jsonRequest.timeoutInterval = 15;</span><br><span class="line">    sharedClient.requestSerializer = jsonRequest;</span><br><span class="line">    return sharedClient;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">1、GET方法</span><br><span class="line"></span><br><span class="line">[[HttpTool AFHTTPSessionManager]  GET:path parameters:param progress:nil success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) &#123;</span><br><span class="line">    NSHTTPURLResponse *urlResponse = (NSHTTPURLResponse *) task.response;</span><br><span class="line">    if (urlResponse.statusCode == 500) &#123;</span><br><span class="line">        NSDictionary *successDict = responseObject;</span><br><span class="line">        NSString *errorStr = successDict[@&quot;error&quot;];</span><br><span class="line">        if (errorStr) &#123;</span><br><span class="line">            NSError *error = [NSError errorWithDomain:@&quot;httpError&quot; code:500 userInfo:@&#123;NSLocalizedDescriptionKey: errorStr&#125;];</span><br><span class="line">            //回调错误信息</span><br><span class="line">        &#125;</span><br><span class="line">        else &#123;</span><br><span class="line">            NSError *error = [NSError errorWithDomain:@&quot;httpError&quot; code:500 userInfo:@&#123;NSLocalizedDescriptionKey:@&quot;网络请求错误（500）&quot;&#125;];</span><br><span class="line">            //回调错误信息</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    else &#123;</span><br><span class="line">        //回调成功的数据</span><br><span class="line">    &#125;</span><br><span class="line">&#125; failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) &#123;</span><br><span class="line">    if (error) &#123;</span><br><span class="line">        //回调错误信息</span><br><span class="line">    &#125;</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">2.POST方法</span><br><span class="line"></span><br><span class="line">[[HttpTool AFHTTPSessionManager] POST:path parameters:param progress:nil success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) &#123;</span><br><span class="line">    NSHTTPURLResponse *urlResponse = (NSHTTPURLResponse *) task.response;</span><br><span class="line">    if (urlResponse.statusCode == 500) &#123;</span><br><span class="line">        NSDictionary *successDict = responseObject;</span><br><span class="line">        NSString *errorStr = successDict[@&quot;error&quot;];</span><br><span class="line">        if (errorStr) &#123;</span><br><span class="line">            NSError *error = [NSError errorWithDomain:@&quot;httpError&quot; code:500 userInfo:@&#123;NSLocalizedDescriptionKey: errorStr&#125;];</span><br><span class="line">            //回调错误信息</span><br><span class="line">        &#125;</span><br><span class="line">        else &#123;</span><br><span class="line">            NSError *error = [NSError errorWithDomain:@&quot;httpError&quot; code:500 userInfo:@&#123;NSLocalizedDescriptionKey:@&quot;网络请求错误（500）&quot;&#125;];</span><br><span class="line">            //回调错误信息</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    else &#123;</span><br><span class="line">        //回调成功数据</span><br><span class="line">    &#125;</span><br><span class="line">&#125; failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) &#123;</span><br><span class="line">    if (error) &#123;</span><br><span class="line">        //回调错误信息</span><br><span class="line">    &#125;</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">3.PUT方法</span><br><span class="line"></span><br><span class="line">[[HttpTool AFHTTPSessionManager] PUT:path parameters:param success:^(NSURLSessionDataTask *task, id responseObject) &#123;</span><br><span class="line">    NSHTTPURLResponse *urlResponse = (NSHTTPURLResponse *) task.response;</span><br><span class="line">    if (urlResponse.statusCode == 500) &#123;</span><br><span class="line">        NSDictionary *successDict = responseObject;</span><br><span class="line">        NSString *errorStr = successDict[@&quot;error&quot;];</span><br><span class="line">        if (errorStr) &#123;</span><br><span class="line">            NSError *error = [NSError errorWithDomain:@&quot;httpError&quot; code:500 userInfo:@&#123;NSLocalizedDescriptionKey: errorStr&#125;];</span><br><span class="line">            //回调错误</span><br><span class="line">        &#125;</span><br><span class="line">        else &#123;</span><br><span class="line">            NSError *error = [NSError errorWithDomain:@&quot;httpError&quot; code:500 userInfo:@&#123;NSLocalizedDescriptionKey:@&quot;网络请求错误（500）&quot;&#125;];</span><br><span class="line">            //回调错误</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    else &#123;</span><br><span class="line">        //回调成功的数据</span><br><span class="line">    &#125;</span><br><span class="line">&#125; failure:^(NSURLSessionDataTask *task, NSError *error) &#123;</span><br><span class="line">    if (error) &#123;</span><br><span class="line">        //回调错误</span><br><span class="line">    &#125;</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">4.DELETE方法</span><br><span class="line"></span><br><span class="line">[[HttpTool AFHTTPSessionManager] DELETE:path parameters:param success:^(NSURLSessionDataTask *task, id responseObject) &#123;</span><br><span class="line">    NSHTTPURLResponse *urlResponse = (NSHTTPURLResponse *) task.response;</span><br><span class="line">    if (urlResponse.statusCode == 500) &#123;</span><br><span class="line">        NSDictionary *successDict = responseObject;</span><br><span class="line">        NSString *errorStr = successDict[@&quot;error&quot;];</span><br><span class="line">        if (errorStr) &#123;</span><br><span class="line">            NSError *error = [NSError errorWithDomain:@&quot;httpError&quot; code:500 userInfo:@&#123;NSLocalizedDescriptionKey: errorStr&#125;];</span><br><span class="line">            //回调错误信息</span><br><span class="line">        &#125;</span><br><span class="line">        else &#123;</span><br><span class="line">            NSError *error = [NSError errorWithDomain:@&quot;httpError&quot; code:500 userInfo:@&#123;NSLocalizedDescriptionKey:@&quot;网络请求错误（500）&quot;&#125;];</span><br><span class="line">            //回调错误信息</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    else &#123;</span><br><span class="line">        //回调成功数据</span><br><span class="line">    &#125;</span><br><span class="line">&#125; failure:^(NSURLSessionDataTask *task, NSError *error) &#123;</span><br><span class="line">    if (error) &#123;</span><br><span class="line">        //回调错误信息</span><br><span class="line">    &#125;</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">5.上传文件，这里的identifier是用来做每一个附件的标识符，根据每一个不同的标识符返回不同的进度，这里涉及到附件批量上传以及进度回调就不在这里进行详细的说明了</span><br><span class="line"></span><br><span class="line">NSString *fileName = params[@&quot;fileName&quot;];</span><br><span class="line">if (!fileName || [fileName isEqualToString:@&quot;&quot;]) &#123;</span><br><span class="line">    fileName = [[PhotoNameModel new] photoTimeName];</span><br><span class="line">&#125;</span><br><span class="line">[[HTTP AFHTTPSessionManager] POST:path parameters:params constructingBodyWithBlock:^(id&lt;AFMultipartFormData&gt;  _Nonnull formData) &#123;</span><br><span class="line">    </span><br><span class="line">    [formData appendPartWithFileData:data name:@&quot;attachments&quot; fileName:fileName mimeType:@&quot;image/jpeg&quot;];</span><br><span class="line">    </span><br><span class="line">&#125; progress:^(NSProgress * _Nonnull uploadProgress) &#123;</span><br><span class="line">    </span><br><span class="line">    NSString *identifier = [params stringForKey:@&quot;identifier&quot;];</span><br><span class="line">    NSDictionary *progressDic = @&#123;@&quot;totalBytesSent&quot;</span><br><span class="line">                                  :@(uploadProgress.completedUnitCount),@&quot;totalBytesExpectedToSend&quot;</span><br><span class="line">                                  :@(uploadProgress.totalUnitCount),@&quot;identifier&quot;:identifier&#125;;</span><br><span class="line">    </span><br><span class="line">    if (identifier &amp;&amp; ![identifier isEqualToString:@&quot;&quot;]) &#123;</span><br><span class="line">        success(progressDic);//回调进度</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">&#125; success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) &#123;</span><br><span class="line">    </span><br><span class="line">    if (success) &#123;</span><br><span class="line">        success(responseObject);//进度完成回调成功数据</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">&#125; failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) &#123;</span><br><span class="line">    </span><br><span class="line">    if (error) &#123;</span><br><span class="line">        if (fail) &#123;</span><br><span class="line">            fail(error)；//回调错误信息</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">6.下载文件</span><br><span class="line">static NSString *tempDirName = @&quot;Downloads&quot;;</span><br><span class="line"></span><br><span class="line">NSURL *documentsDirectoryURL = [fileManager URLForDirectory:NSCachesDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:NO error:nil];</span><br><span class="line"></span><br><span class="line">NSString  *tempPath = [documentsDirectoryURL.absoluteString stringByReplacingOccurrencesOfString:@&quot;file://&quot; withString:@&quot;&quot;];</span><br><span class="line">    </span><br><span class="line">NSString * fileDir = [NSString stringWithFormat:@&quot;%@/%@&quot;, tempPath,tempDirName];</span><br><span class="line">NSURL *filePath = [NSURL fileURLWithPath:fileDir]</span><br><span class="line">NSURL *fileUrl = [NSURL URLWithString:urlStr];//地址        </span><br><span class="line">//创建管理者对象</span><br><span class="line">AFHTTPSessionManager *manager = [AFHTTPSessionManager manager];</span><br><span class="line">//创建请求对象</span><br><span class="line">NSURLRequest *request = [NSURLRequest requestWithURL:fileUrl];</span><br><span class="line"></span><br><span class="line">NSURLSessionDownloadTask *downTask = [manager downloadTaskWithRequest:request progress:^(NSProgress * _Nonnull downloadProgress) &#123;</span><br><span class="line">    double precent = (double)downloadProgress.completedUnitCount / (double)downloadProgress.totalUnitCount;</span><br><span class="line">    NSLog(@&quot;%lf&quot;,precent);</span><br><span class="line">  &#125; destination:^NSURL * _Nonnull(NSURL * _Nonnull targetPath, NSURLResponse * _Nonnull response) &#123;</span><br><span class="line">    NSHTTPURLResponse *newResponse = (NSHTTPURLResponse *)response;</span><br><span class="line">    if (newResponse.statusCode == 200) &#123;</span><br><span class="line">      //设置下载路径，通过沙盒获取缓存地址，最后返回NSURL对象</span><br><span class="line">      return filePath;</span><br><span class="line">    &#125;</span><br><span class="line">    return nil;</span><br><span class="line">  &#125; completionHandler:^(NSURLResponse * _Nonnull response, NSURL * _Nullable filePath, NSError * _Nullable error) &#123;</span><br><span class="line">    if (error) &#123;</span><br><span class="line">      NSLog(@&quot;%@&quot;,[error localizedDescription]);</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">      if ([fileManager fileExistsAtPath:filePath]) &#123;</span><br><span class="line">          dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^&#123;</span><br><span class="line">            //这里做成功的处理</span><br><span class="line">          &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  ];</span><br><span class="line">  [downTask resume];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>好了关于AFNetWorking的使用就基本介绍完了，从上面的代码中我们可以看到，官方的API虽然很不错，但是相对于AFNetWorking的清晰结构化来说，AF比官方的API调用起来就更加的灵活方便，使用起来也是得心应手。相对来说，我们将AF再做个二次封装作为一个公共方法，传入我们地址和参数，在外部调用的时候就更加的方便了。这种灵活的封装让我们的效率提升了不少。</p>
+<p>下面再简单的介绍一个关于二次封装</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">1.封装AFNetWorking</span><br><span class="line">#import &quot;HttpTool.h&quot;</span><br><span class="line">#import &quot;AFNetworking.h&quot;</span><br><span class="line"></span><br><span class="line">typedef NS_ENUM(NSUInteger, AFRequestType) &#123;</span><br><span class="line">    AFRequestTypeGET,</span><br><span class="line">    AFRequestTypePOST,</span><br><span class="line">    AFRequestTypePUT,</span><br><span class="line">    AFRequestTypeDELETE,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">@interface HttpTool : NSObject</span><br><span class="line"></span><br><span class="line">//定义属性方法进行回调</span><br><span class="line">+ (void)requestWithType:(AFRequestType)type path:(NSString *)path params:(NSDictionary *)param success:(HttpSuccessBlock)success fail:(HttpFailBlock)fail;</span><br><span class="line"></span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@implementation HttpTool</span><br><span class="line"></span><br><span class="line">+ (void)requestWithType:(AFRequestType)type path:(NSString *)path params:(id)param success:(HttpSuccessBlock)success fail:(HttpFailBlock)fail</span><br><span class="line">&#123;</span><br><span class="line">    if (type == AFRequestTypeGET) &#123;</span><br><span class="line">       //GET请求</span><br><span class="line">    &#125; else if (type == AFRequestTypePOST) &#123;</span><br><span class="line">       //POST请求</span><br><span class="line">    &#125; else if (type == AFRequestTypePUT) &#123;</span><br><span class="line">       //PUT请求</span><br><span class="line">    &#125; else if (type == AFRequestTypeDELETE) &#123;</span><br><span class="line">       //DELETE请求</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">2.封装HTTPTool</span><br><span class="line">#import &quot;HTTPRequest.h&quot;</span><br><span class="line">#import &quot;HttpTool.h&quot;</span><br><span class="line"></span><br><span class="line">@interface HTTPRequest : NSObject</span><br><span class="line"></span><br><span class="line">//请求的URl地址</span><br><span class="line">@property (copy,nonatomic) NSString *requestURL;</span><br><span class="line">//原始URL</span><br><span class="line">@property (nonatomic, strong) NSString *requestBaseURL;</span><br><span class="line">// 请求类型</span><br><span class="line">@property (assign,nonatomic) AFRequestType requestType;</span><br><span class="line"></span><br><span class="line">//定义类方法进行值传递</span><br><span class="line">+ (HTTPRequest *)requestWithURL:(NSString *)url baseURL:(NSString *)baseURL reuqestType:(AFRequestType)requestType;</span><br><span class="line"></span><br><span class="line">//定义对象方法进行回调处理</span><br><span class="line">- (void)request:(id)params successBlock:(HttpSuccessBlock)successBlock failBlock:(HttpFailBlock)failBlock;</span><br><span class="line"></span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@implementation HTTPRequest</span><br><span class="line"></span><br><span class="line">+ (HTTPRequest *)requestWithURL:(NSString *)url baseURL:(NSString *)baseURL reuqestType:(AFRequestType)requestType &#123;</span><br><span class="line">    HTTPRequest *request = [[HTTPRequest alloc] init];</span><br><span class="line">    request.requestURL = url;</span><br><span class="line">    request.requestType = requestType;</span><br><span class="line">    request.requestBaseURL = baseURL;</span><br><span class="line">    return request;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)request:(id)params successBlock:(HttpSuccessBlock)successBlock failBlock:(HttpFailBlock)failBlock &#123;</span><br><span class="line">    NSString *url = [NSString stringWithFormat:@&quot;%@%@&quot;,self.requestBaseURL,self.requestURL]</span><br><span class="line">    [HttpTool requestWithType:self.requestType path:url params:params success:successBlock fail:failBlock];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">3.继承HTTPRequest</span><br><span class="line">#import &quot;HTTPRequest.h&quot;</span><br><span class="line">#import &quot;TasksRequest.h&quot;</span><br><span class="line"></span><br><span class="line">@interface TasksRequest : HTTPRequest</span><br><span class="line"></span><br><span class="line">//获取任务列表数据</span><br><span class="line">+ (HTTPRequest *)getTaskLists;</span><br><span class="line"></span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@implementation TasksRequest</span><br><span class="line"></span><br><span class="line">+ (HTTPRequest *)getTaskLists &#123;</span><br><span class="line">    return [HTTPRequest requestWithURL:@&quot;/task/query&quot; baseURL:kTaskURL reuqestType:AFRequestTypeGET];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@end</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">4.外部调用</span><br><span class="line"></span><br><span class="line">注：block的回调需要注意循环引用的问题，如果你的项目引入了RAC那么可以直接引用如下方法</span><br><span class="line"></span><br><span class="line">@weakify(self)</span><br><span class="line">[[TasksRequest getTaskLists] request:params successBlock:^(id success) &#123;</span><br><span class="line">     @strongify(self)</span><br><span class="line">        //处理成功数据</span><br><span class="line">	 &#125; failBlock:^(NSError *error) &#123;</span><br><span class="line">        //处理失败信息</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+<p>OK，介绍到这里文章差不多到了最后，二次封装带给我们的是工作效率显著的提升，这样我们不用每次请求都去调用AF显示很繁琐，同时也做了很多无用功，经过二次封装之后，我们的项目的网络请求就在AF本身的轻量级的基础上显得更加的方便，希望这篇文章能帮助到你。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2017/06/09/git/" rel="next" title="git分支管理与基本流程">
+      git分支管理与基本流程 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#IOS-9-0%E4%B9%8B%E5%89%8D"><span class="nav-number">1.</span> <span class="nav-text">IOS 9.0之前</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#IOS-9-0%E4%B9%8B%E5%90%8E"><span class="nav-number">2.</span> <span class="nav-text">IOS 9.0之后</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="hr"
+      src="/images/lufei.gif">
+  <p class="site-author-name" itemprop="name">hr</p>
+  <div class="site-description" itemprop="description">记录个人的点点滴滴</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/JackHan-hr" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;JackHan-hr" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:jackhan11108@139.com" title="E-Mail → mailto:jackhan11108@139.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">hr</span>
+</div>
+  <div class="powered-by">相逢有缘 | 有缘再见
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+  <script type="text/javascript" color="255,0,0" count="99" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"huangru.coding.net","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="历时一个多月的企业微信，在这一个多月的连续冲刺之下终于暂时告一段落，在这版本迭代的空档期，我还是静下心来好好的整理一下关于这个由腾讯提供平台，第三方服务商接入的产品。企业微信的开发过程中，我们遇到了很多问题，在处理这些问题的同时，我们也在飞速的成长着，在这种平台开发之上积累了更多的开发经验。同时也在这类开发过程中深刻了解到了文档的重要性，无论是接入别人的平台开发阅读别人的开发文档，还是我们自己的内">
+<meta property="og:type" content="article">
+<meta property="og:title" content="企业微信开发（一期）">
+<meta property="og:url" content="https://huangru.coding.net/2017/12/19/qywx/index.html">
+<meta property="og:site_name" content="JackHan">
+<meta property="og:description" content="历时一个多月的企业微信，在这一个多月的连续冲刺之下终于暂时告一段落，在这版本迭代的空档期，我还是静下心来好好的整理一下关于这个由腾讯提供平台，第三方服务商接入的产品。企业微信的开发过程中，我们遇到了很多问题，在处理这些问题的同时，我们也在飞速的成长着，在这种平台开发之上积累了更多的开发经验。同时也在这类开发过程中深刻了解到了文档的重要性，无论是接入别人的平台开发阅读别人的开发文档，还是我们自己的内">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2017-12-19T14:11:03.000Z">
+<meta property="article:modified_time" content="2022-02-24T07:32:33.554Z">
+<meta property="article:author" content="hr">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://huangru.coding.net/2017/12/19/qywx/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>企业微信开发（一期） | JackHan</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">JackHan</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://huangru.coding.net/2017/12/19/qywx/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/lufei.gif">
+      <meta itemprop="name" content="hr">
+      <meta itemprop="description" content="记录个人的点点滴滴">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="JackHan">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          企业微信开发（一期）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-12-19 22:11:03" itemprop="dateCreated datePublished" datetime="2017-12-19T22:11:03+08:00">2017-12-19</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-02-24 15:32:33" itemprop="dateModified" datetime="2022-02-24T15:32:33+08:00">2022-02-24</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/WX/" itemprop="url" rel="index"><span itemprop="name">WX</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>历时一个多月的企业微信，在这一个多月的连续冲刺之下终于暂时告一段落，在这版本迭代的空档期，我还是静下心来好好的整理一下关于这个由腾讯提供平台，第三方服务商接入的产品。企业微信的开发过程中，我们遇到了很多问题，在处理这些问题的同时，我们也在飞速的成长着，在这种平台开发之上积累了更多的开发经验。同时也在这类开发过程中深刻了解到了文档的重要性，无论是接入别人的平台开发阅读别人的开发文档，还是我们自己的内部文档，文档的可读性、完整性和存在性是非常的重要，它可以有效的帮助我们集成API，了解开发原理、框架结构，帮助我们在开发过程中减少不必要的时间开销，当然要是一些含糊不清，可读性差的文档也会导致我们花费更多的时间原地踏步，所以只要是个开发者，你的文档就必须伴随着你的开发，同时你也得保证它的可读性与完整性。</p>
+<span id="more"></span>
+
+<h1 id="框架环境"><a href="#框架环境" class="headerlink" title="框架环境"></a>框架环境</h1><p>这里简单介绍一下关于企业微信的开发环境，我们用react脚手架和webpack构建工具，再配合一系列的其他插件搭建了这个项目的开发环境，环境的搭建过程这里就不详细介绍了。主要讲一下在搭建过程中遇到的一些问题：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">css-module</span><br></pre></td></tr></table></figure>
+<p>webpack的css-loader插件可以帮助我们进行css的差异化处理</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">options: &#123;</span><br><span class="line">  modules: <span class="literal">true</span>,</span><br><span class="line">  localIdentName: <span class="string">&quot;[path][name]--[local]--[hash:base64:5]&quot;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>将css-loader的options配置之后，我们在webpack打包的代码之中就可以看到每一个模块的css都会被加上一段哈希值作为css的差异化。这里有两个踩点:<br>1、只有将css文件引入到js文件中，并且以类似对象的点语法操作引用之后css-module才会生效；<br>2、css-module的哈希化产生的问题，我们的项目引入了两个UI库：weui和antd，恰好我们的项目也采用的是less的css预处理器，在entry文件中引入这两个库的css文件之后，导致这两个库的css文件类名在打包之后被哈希化了，最后呈现的就是没有样式的页面，在一番斟酌之后，我们决定对所有css文件采用非css哈希化，对所有的less文件进行css哈希化。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="built_in">test</span>: /\.css$/,</span><br><span class="line">  use: ExtractTextPlugin.extract(&#123;</span><br><span class="line">    fallback: <span class="string">&#x27;style-loader&#x27;</span>,</span><br><span class="line">    use: [</span><br><span class="line">      &#123;</span><br><span class="line">        loader: <span class="string">&quot;css-loader&quot;</span></span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        loader: <span class="string">&quot;postcss-loader&quot;</span></span><br><span class="line">      &#125;</span><br><span class="line">    ]</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;,</span><br><span class="line">&#123;</span><br><span class="line">  <span class="built_in">test</span>: /\.less$/,</span><br><span class="line">  use: ExtractTextPlugin.extract(&#123;</span><br><span class="line">    fallback: <span class="string">&#x27;style-loader&#x27;</span>,</span><br><span class="line">    use: [</span><br><span class="line">      &#123;</span><br><span class="line">        loader: <span class="string">&quot;css-loader&quot;</span>,</span><br><span class="line">        options: &#123;</span><br><span class="line">          modules: <span class="literal">true</span>,</span><br><span class="line">          localIdentName: <span class="string">&quot;[path][name]--[local]--[hash:base64:5]&quot;</span></span><br><span class="line">        &#125;</span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        loader: <span class="string">&quot;postcss-loader&quot;</span></span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        loader: <span class="string">&quot;less-loader&quot;</span></span><br><span class="line">      &#125;</span><br><span class="line">    ]</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&#x27;plugins&#x27;: [&#x27;import&#x27;, &#123; &#x27;libraryName&#x27;: &#x27;antd-mobile&#x27;, &#x27;style&#x27;: &#x27;css&#x27;&#125;]&quot;</span></span><br></pre></td></tr></table></figure>
+<p>由于antd是支持less和css文件的引入，所以最后我们就引入css文件避免与项目内的自定义css文件产生冲突。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">url-loader</span><br><span class="line">file-loader</span><br></pre></td></tr></table></figure>
+<p>这两个插件是用于webpack打包时打包图片和文件的，我遇到这个问题是在加入favicon.ico文件的时候，这个文件加入进来直接在entry的html中调用link，我本以为在调用link的时候输入的路径会引用到这个文件，结果证明不行，还需要我们在js文件中单独引入一次，这样这个文件才会被打包。</p>
+<h1 id="屏幕适配"><a href="#屏幕适配" class="headerlink" title="屏幕适配"></a>屏幕适配</h1><p>webapp的项目永远是不可能脱离屏幕适配这一步的，我们的项目采用过两套适配方案：<br>1、flexiable<br>flexiable的主要作用是根据设备像素比也就是dpr将视觉稿中的px转换成rem，这里简单介绍一下像素的概念，这里采用直接加载阿里CDN的方式</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;script src=<span class="string">&quot;http://g.tbcdn.cn/mtb/lib-flexible/0.3.4/??flexible_css.js,flexible.js&quot;</span>&gt;&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+<p>物理像素：物理像素又被称为设备像素，他是显示设备中一个最微小的物理部件。每个像素可以根据操作系统设置自己的颜色和亮度。</p>
+<p>设备独立像素：设备独立像素也称为密度无关像素，可以认为是计算机坐标系统中的一个点，这个点代表一个可以由程序使用的虚拟像素(比如说CSS像素)，然后由相关系统转换为物理像素。</p>
+<p>CSS像素（设备逻辑像素）：CSS像素是一个抽像的单位，主要使用在浏览器上，用来精确度量Web页面上的内容。一般情况之下，CSS像素称为与设备无关的像素(device-independent pixel)，简称DIP。</p>
+<p>屏幕密度：屏幕密度是指一个设备表面上存在的像素数量，它通常以每英寸有多少像素来计算(PPI)。</p>
+<p>设备像素比：设备像素比简称为dpr，其定义了物理像素和设备独立像素的对应关系。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">设备像素比 = 物理像素 / 设备独立像素</span><br></pre></td></tr></table></figure>
+<p>rem：rem就是相对于根元素<html>的font-size来做计算<br>所以针对我们的设计稿750 x 1334 的比例计算出 1rem &#x3D; 75px</p>
+<p>采用了flexiable的适配方案在屏幕适配上面能够适应大部分手机屏幕，我在最初采用的时候也没有问题，但是问题出在每一次html页面的网页在屏幕进行缩放之后都会重新计算dpr。导致每一次拖动屏幕或者放大缩小屏幕都会出现因重新计算dpr导致的屏幕闪烁问题，当然我们可以再微信开发的屏幕上禁止掉它的缩放，但是这始终是一个隐患问题，所以我们果断弃用了这套方案，而采用更新的viewport的方案。</p>
+<p>2、viewport<br>viewport（视窗）：即设备屏幕上用来显示网页内容的区域<br>移动设备上计算一个css像素对应的物理像素数可以由设备像素比（devicePixelRatio）来计算，Flexible方案是通过JavaScript来模拟vw的特性，vw已经得到了众多浏览器的支持，也就是说，可以直接考虑将vw单位运用于我们的适配布局中，vw是基于Viewport视窗的长度单位：</p>
+<p>1vw等于window.innerWidth的1%；<br>1vh等于window.innerHeihgt的1%；<br>vmin的值是当前vw和vh中较小的值；<br>vmax的值是当前vw和vh中较大的值。</p>
+<p>所以，根据上面的关系得到在750x1334的视觉设计稿中1vw &#x3D; 7.5px，这里的计算计算我们引入了一个插件<a target="_blank" rel="noopener" href="https://github.com/evrone/postcss-px-to-viewport">postcss-px-to-viewport</a>，通过这个插件我们在项目中直接写入px值，在打包编译后该插件会自动计算出vw或者vh值，这里有个小细节根据在插件中设置好的视觉稿宽高，可以直接写入UI给出的px值，其他情况下一律按照1px乘以dpr的值输入。</p>
+<p>vw适配的适用场景：<br>1、容器适配；<br>2、文本的适配；<br>3、大于1px的边框、圆角、阴影；<br>4、内距和外距</p>
+<p>在vw适配中还有一个问题，那就是容器的长宽比缩放，这里采用<a target="_blank" rel="noopener" href="https://github.com/yisibl/postcss-aspect-ratio-mini">postcss-aspect-ratio-mini</a>。</p>
+<p>处理1px问题时我们用<a target="_blank" rel="noopener" href="https://github.com/jonathantneal/postcss-write-svg">postcss-write-svg</a>，具体用法可以直接看它的官方文档。</p>
+<p>整体来说我们采用第二套方案也是因为适配稳定，同时兼容性好，这里我只是把这些需要用到的插件列出来作为引导，具体怎么使用，大家可以直接查看官方文档，这样对你自己而言也才是真正的学习。</p>
+<h1 id="调试模式"><a href="#调试模式" class="headerlink" title="调试模式"></a>调试模式</h1><p>移动端开发涉及到手机设备上的开发调试，这里推荐一篇关于<a target="_blank" rel="noopener" href="http://yujiangshui.com/multidevice-frontend-debug/">移动设备调试</a>的文章作为参考。<br>企业微信的调试是在企业微信内嵌webView中的调试，简单来说就是把网页房在企业微信的原生页面里面作为网页展示出来，我们不能直接进行调试修改。所以，我们采用了一些方案：</p>
+<p>1、本地调试服务器<br>要展示一个完整的网站应用，我们需要打包我们的代码进行压缩编译生成html、css、js和图片资源文件，这些文件生成后要在网页上展示出来，电脑端通过localhost可以直接本地加载，但是在企业微信开发这种移动端内嵌网页式的开发中要展示出来就需要我们把这些静态资源部署到公网上去，然后通过内嵌webView加载公网链接进行显示，大致的过程确实是这样，看起来也不是很复杂，但是要实现这个过程，需要做的事就多了。首先我们得有一个托管资源的CDN服务器，目前我们采用的是beego的CDN静态资源的服务器，beego的服务器搭建由后端完成，并部署。因为它有一套成型的CDN托管方案，所以我们能更方便快捷的进行CDN的搭建，对我开发初期可以带来很乐观的效率。但是不足之处便是在于，每一个资源文件的映射都需要手动去实现。所以后期我们还是会更换成node.js的CDN托管服务器，同时由前端自行管理部署等等。好了，有了CDN托管服务器接下来就是部署静态资源，正常来说，直接将其发布到公网上即可，但是这样每一次发布到公网上部署会对调试产生很大一部分时间开销。所以，我们加入的ngrok的反向代理，将我们本地的环境穿透到公网环境上去，然后再通过企业微信内嵌页面加载出来，这里有个问题，反向代理的公网穿透加载比较慢，所以打包的代码要想进行快速调试就必须完全压缩，这样每一次加载静态资源就会快上许多（大约10s左右）。我们在本地构建了一个静态资源服务器在每一次启动加载本地指定目录的资源文件进行方向穿透，这样我们在本地更改代码后就不需要发布到公网上，而可以直接查看。其中最耗时的还是编译打包，因为每一次调试都需要进行重新打包编译，这其中的过程耗时约30s左右。虽然比不上直接通过本地加载，但是也能很大提升我们的开发效率了。</p>
+<p>2、<a target="_blank" rel="noopener" href="https://github.com/Tencent/vConsole">vConsole</a><br>vConsole是腾讯团队提供的一种移动端webapp开发的log工具，它可以将页面中的log信息在设备上通过弹窗的形式展示出来。使用方法也很方便，直接通过npm安装vconsole，然后在代码中初始化即可。这个工具对我们在查看某些数据或者报错信息的时候很方便。</p>
+<p>3、<a target="_blank" rel="noopener" href="http://people.apache.org/~pmuellr/weinre/docs/latest/Home.html">weinre</a><br>weinre通过引入链接文件的方式进行加载，可以在插入脚本的页面进行简单的CSS样式修改和newwork查看，但是这种方式不足之处在每一个需要调试的页面都得加入script链接脚本。</p>
+<p>4、<a target="_blank" rel="noopener" href="https://avwo.github.io/whistle/">whistle</a><br>为了更方便的使用vConsole和weinre，我们引入了whistle，他可以不需要你安装vConsole，也不需要引入weinre即脚本链接，只需要我们在安装之后启动它，然后通过它的调试平台安装它的语法注入我们的页面即可加载vConsole和weinre，whistle也拥有绑定转发、req、res、debugging和插件开发等其他功能。</p>
+<h1 id="JSSDK"><a href="#JSSDK" class="headerlink" title="JSSDK"></a>JSSDK</h1><p>企业微信开发这种平台类的内嵌网页开发，需要接入jssdk，页面加载初始化时，我们需要先获取token，获取token后需要签名验证，验证成功后才能调用jssdk。企业微信要求每一个页面在url变化之后都进行一次jssdk的调用，这里有两种实现方案：</p>
+<p>签名验证：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">wx.config(&#123;</span><br><span class="line">  beta: <span class="literal">true</span>,</span><br><span class="line">  debug: <span class="literal">false</span>,</span><br><span class="line">  appId: info.appId,</span><br><span class="line">  timestamp: info.timestamp,</span><br><span class="line">  nonceStr: info.nonceStr,</span><br><span class="line">  signature: info.signature,</span><br><span class="line">  jsApiList: [<span class="string">&#x27;getLocation&#x27;</span>, <span class="string">&#x27;chooseImage&#x27;</span>, <span class="string">&#x27;previewImage&#x27;</span>, <span class="string">&#x27;uploadImage&#x27;</span>, <span class="string">&#x27;onHistoryBack&#x27;</span>, <span class="string">&#x27;hideAllNonBaseMenuItem&#x27;</span>, <span class="string">&#x27;showAllNonBaseMenuItem&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;onMenuShareAppMessage&#x27;</span>, <span class="string">&#x27;onMenuShareWechat&#x27;</span>, <span class="string">&#x27;onMenuShareTimeline&#x27;</span>, <span class="string">&#x27;shareAppMessage&#x27;</span>, <span class="string">&#x27;shareWechatMessage&#x27;</span>, <span class="string">&#x27;openEnterpriseChat&#x27;</span>, <span class="string">&#x27;startRecord&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;stopRecord&#x27;</span>, <span class="string">&#x27;onVoiceRecordEnd&#x27;</span>, <span class="string">&#x27;uploadVoice&#x27;</span>, <span class="string">&#x27;setClipboardData&#x27;</span>, <span class="string">&#x27;getClipboardData&#x27;</span>, <span class="string">&#x27;closeWindow&#x27;</span>]</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+
+<p>1、封装签名体，在每一个页面进行调用；<br>2、在react-router的onEnter方法里面进行调用；</p>
+<p>这里我们采用的第一种方式，优点是签名调用灵活，在每一个页面组件化的情况下也可以进行签名，缺点是方法代码臃肿，第二种方案代码简洁，但是调用不灵活，一些子组件url不变的情况下也需要签名的情况下不能直接调用。当然，我们完全可以两种方案都采用，页面转变可以通过路由的生命周期调用，同时在个别子组件单独调用。这也是我们需要完善的优化点。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2017/09/15/post/" rel="prev" title="backbone框架下基于gulp和npm的环境构建">
+      <i class="fa fa-chevron-left"></i> backbone框架下基于gulp和npm的环境构建
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/05/24/qywx2/" rel="next" title="企业微信开发（二期）">
+      企业微信开发（二期） <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A1%86%E6%9E%B6%E7%8E%AF%E5%A2%83"><span class="nav-number">1.</span> <span class="nav-text">框架环境</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%B1%8F%E5%B9%95%E9%80%82%E9%85%8D"><span class="nav-number">2.</span> <span class="nav-text">屏幕适配</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%B0%83%E8%AF%95%E6%A8%A1%E5%BC%8F"><span class="nav-number">3.</span> <span class="nav-text">调试模式</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#JSSDK"><span class="nav-number">4.</span> <span class="nav-text">JSSDK</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="hr"
+      src="/images/lufei.gif">
+  <p class="site-author-name" itemprop="name">hr</p>
+  <div class="site-description" itemprop="description">记录个人的点点滴滴</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/JackHan-hr" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;JackHan-hr" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:jackhan11108@139.com" title="E-Mail → mailto:jackhan11108@139.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">hr</span>
+</div>
+  <div class="powered-by">相逢有缘 | 有缘再见
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+  <script type="text/javascript" color="255,0,0" count="99" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+</body>
+</html>

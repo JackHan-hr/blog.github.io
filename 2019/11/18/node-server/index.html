@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"huangru.coding.net","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="了解前端的人应该都知道，Node.js作为前端依赖环境，与 JavaScript 密不可分。Node.js是一个基于 Chrome V8 引擎的 JavaScript 运行时，Node.js的的应用也十分的广泛，我们大多数时候将它作为一门服务器语言来使用。这里主要讲的是运用Node.js构建一个微信平台上使用的前端服务器。源码在个人的GitHub上面可以看到，这里主要是讲述一下个人的一些构建思路。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Node+Express搭建的企业微信前端服务器">
+<meta property="og:url" content="https://huangru.coding.net/2019/11/18/node-server/index.html">
+<meta property="og:site_name" content="JackHan">
+<meta property="og:description" content="了解前端的人应该都知道，Node.js作为前端依赖环境，与 JavaScript 密不可分。Node.js是一个基于 Chrome V8 引擎的 JavaScript 运行时，Node.js的的应用也十分的广泛，我们大多数时候将它作为一门服务器语言来使用。这里主要讲的是运用Node.js构建一个微信平台上使用的前端服务器。源码在个人的GitHub上面可以看到，这里主要是讲述一下个人的一些构建思路。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-11-18T13:27:53.000Z">
+<meta property="article:modified_time" content="2022-02-24T07:32:33.554Z">
+<meta property="article:author" content="hr">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://huangru.coding.net/2019/11/18/node-server/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Node+Express搭建的企业微信前端服务器 | JackHan</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">JackHan</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://huangru.coding.net/2019/11/18/node-server/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/lufei.gif">
+      <meta itemprop="name" content="hr">
+      <meta itemprop="description" content="记录个人的点点滴滴">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="JackHan">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Node+Express搭建的企业微信前端服务器
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-11-18 21:27:53" itemprop="dateCreated datePublished" datetime="2019-11-18T21:27:53+08:00">2019-11-18</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-02-24 15:32:33" itemprop="dateModified" datetime="2022-02-24T15:32:33+08:00">2022-02-24</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/NodeJS/" itemprop="url" rel="index"><span itemprop="name">NodeJS</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>了解前端的人应该都知道，Node.js作为前端依赖环境，与 JavaScript 密不可分。Node.js是一个基于 Chrome V8 引擎的 JavaScript 运行时，Node.js的的应用也十分的广泛，我们大多数时候将它作为一门服务器语言来使用。这里主要讲的是运用Node.js构建一个微信平台上使用的前端服务器。源码在个人的<a target="_blank" rel="noopener" href="https://github.com/JackHan-hr">GitHub</a>上面可以看到，这里主要是讲述一下个人的一些构建思路。该前端服务器我主要是构建了关于单点登录、消息接收、日志收集以及数据库连接操作的一些基本案例，在我看来这些最基本的案例可以帮助我们从头了解到Node.js搭建服务器的过程。</p>
+<span id="more"></span>
+
+<h1 id="初始化及依赖包"><a href="#初始化及依赖包" class="headerlink" title="初始化及依赖包"></a>初始化及依赖包</h1><p>Express是一款基于 Node.js 平台，快速、开放、极简的 Web 开发框架，它将 Node.js 的一些基本api封装过后更方便快捷的供我们使用。首先我们引入Express及其它一些依赖包</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">var express = require(&#x27;express&#x27;);</span><br><span class="line">var path = require(&#x27;path&#x27;);</span><br><span class="line">var serveStatic = require(&#x27;serve-static&#x27;);</span><br><span class="line">var bodyParser = require(&#x27;body-parser&#x27;);</span><br><span class="line">require(&#x27;body-parser-xml&#x27;)(bodyParser);</span><br><span class="line">var mongoose = require(&quot;mongoose&quot;);</span><br><span class="line">var redis = require(&#x27;redis&#x27;);</span><br></pre></td></tr></table></figure>
+
+<p>引进这些依赖包之后，我们开始进入正题，服务器的debug调试大多数时候是靠日志进行，而且日志信息的量也是非常大的，所以我们不光要对日志进行输出查看，还要对其进行分类处理，所以我们单独建一个log.js的文件对整个日志输出统一管理</p>
+<p>首先引入log4js与colors的依赖，log4js是基于console的输出</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">var log4js = require(&#x27;log4js&#x27;);</span><br><span class="line">var colors = require(&#x27;colors&#x27;);</span><br></pre></td></tr></table></figure>
+
+<p>接下来是log的基本输出配置</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">log4js.configure(&#123;</span><br><span class="line">  appenders: &#123;</span><br><span class="line">    server: &#123;</span><br><span class="line">      type: &#x27;file&#x27;,</span><br><span class="line">      filename: &#x27;server.log&#x27;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  categories: &#123;</span><br><span class="line">    default: &#123;</span><br><span class="line">      appenders: [&#x27;server&#x27;],</span><br><span class="line">      level: &#x27;debug&#x27;,</span><br><span class="line">      format:&#x27;:method :url :status&#x27;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">colors.setTheme(&#123;</span><br><span class="line">    input: &#x27;grey&#x27;,</span><br><span class="line">    verbose: &#x27;cyan&#x27;,</span><br><span class="line">    prompt: &#x27;red&#x27;,</span><br><span class="line">    info: &#x27;green&#x27;,</span><br><span class="line">    data: &#x27;blue&#x27;,</span><br><span class="line">    help: &#x27;cyan&#x27;,</span><br><span class="line">    warn: &#x27;yellow&#x27;,</span><br><span class="line">    debug: &#x27;magenta&#x27;,</span><br><span class="line">    error: &#x27;red&#x27;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>设置好基本配置之后，我们对其进行分类输出</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">var Logger = &#123;</span><br><span class="line"></span><br><span class="line">  log4js: log4js,</span><br><span class="line"></span><br><span class="line">  init(name) &#123;</span><br><span class="line">    var logger = log4js.getLogger(name);</span><br><span class="line">    return logger;</span><br><span class="line">  &#125;,</span><br><span class="line"></span><br><span class="line">  console(logger, context, color) &#123;</span><br><span class="line">    logger.info(context);</span><br><span class="line">    switch (color) &#123;</span><br><span class="line">      case &#x27;debug&#x27;:</span><br><span class="line">        console.log(context.debug);</span><br><span class="line">        break;</span><br><span class="line">      case &#x27;verbose&#x27;:</span><br><span class="line">        console.log(context.verbose);</span><br><span class="line">        break;</span><br><span class="line">      case &#x27;prompt&#x27;:</span><br><span class="line">        console.log(context.prompt);</span><br><span class="line">        break;</span><br><span class="line">      case &#x27;error&#x27;:</span><br><span class="line">        console.log(context.error);</span><br><span class="line">        break;</span><br><span class="line">      case &#x27;warn&#x27;:</span><br><span class="line">        console.log(context.warn);</span><br><span class="line">        break;</span><br><span class="line">      case &#x27;help&#x27;:</span><br><span class="line">        console.log(context.help);</span><br><span class="line">        break;</span><br><span class="line">      case &#x27;data&#x27;:</span><br><span class="line">        console.log(context.data);</span><br><span class="line">        break;</span><br><span class="line">      case &#x27;info&#x27;:</span><br><span class="line">        console.log(context.info);</span><br><span class="line">        break;</span><br><span class="line">      case &#x27;input&#x27;:</span><br><span class="line">        console.log(context.input);</span><br><span class="line">        break;</span><br><span class="line">      default:</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>由于微信平台的一些服务器返回参数是通过xml进行包装的，所以我们需要用到bodyParser进行解析，所以我们一开始需要对其初始化</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">app.use(bodyParser.urlencoded(&#123;extended:true&#125;));</span><br><span class="line">app.use(bodyParser.json());</span><br><span class="line">app.use(bodyParser.xml(&#123;</span><br><span class="line">  limit: &#x27;1MB&#x27;,</span><br><span class="line">  xmlParseOptions: &#123;</span><br><span class="line">    normalize: true,</span><br><span class="line">    normalizeTags: true,</span><br><span class="line">    explicitArray: false</span><br><span class="line">  &#125;,</span><br><span class="line">  verify: function(req, res, buf, encoding) &#123;</span><br><span class="line">    if(buf &amp;&amp; buf.length) &#123;</span><br><span class="line">      req.rawBody = buf.toString(encoding || &quot;utf8&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;));</span><br></pre></td></tr></table></figure>
+
+<h1 id="公共配置文件"><a href="#公共配置文件" class="headerlink" title="公共配置文件"></a>公共配置文件</h1><p>接下来，我们需要对整个服务建立一个公共的配置文件，以便我们在需要的时候直接从配置文件里面读取，配置文件包括环境变量配置、mongodb连接、redis连接、微信平台应用配置、接口配置等，这里我们分为了开发环境（development）、测试环境（staging）、正式环境（production）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br></pre></td><td class="code"><pre><span class="line">var args = process.argv.splice(2);</span><br><span class="line"></span><br><span class="line">if (!args || !args.length)</span><br><span class="line">  return;</span><br><span class="line"></span><br><span class="line">config.env(args);</span><br><span class="line"></span><br><span class="line">const config = &#123;</span><br><span class="line">  //环境变量</span><br><span class="line">  env: function(args) &#123;</span><br><span class="line">    this.NODE_CLOUD = args[0].split(&#x27;.&#x27;)[0];</span><br><span class="line">    this.NODE_ENV = args[0].split(&#x27;.&#x27;)[1];</span><br><span class="line">    Logger.console(logger, &#x27;NODE_ENV =========== &#x27; + this.NODE_ENV, &#x27;info&#x27;);</span><br><span class="line">    Logger.console(logger, &#x27;NODE_CLOUD =========== &#x27; + this.NODE_CLOUD, &#x27;info&#x27;);</span><br><span class="line">  &#125;,</span><br><span class="line"></span><br><span class="line">  //mongodb数据库</span><br><span class="line">  mongodb: function() &#123;</span><br><span class="line">    switch (this.NODE_ENV) &#123;</span><br><span class="line">      case &#x27;development&#x27;: &#123;</span><br><span class="line">        const mongodb = &#123;</span><br><span class="line">          host: &#x27;*.*.*.*&#x27;,</span><br><span class="line">          port: &#x27;8888&#x27;,</span><br><span class="line">          database: &#x27;jackhancloud&#x27;,</span><br><span class="line">          user: &#x27;jackhan&#x27;,</span><br><span class="line">          password: &#x27;********&#x27;,</span><br><span class="line">          session_name: &#x27;master&#x27;</span><br><span class="line">        &#125;;</span><br><span class="line">        return `mongodb://$&#123;mongodb.user&#125;:`      +</span><br><span class="line">                          `$&#123;mongodb.password&#125;@` +</span><br><span class="line">                          `$&#123;mongodb.host&#125;:` +</span><br><span class="line">                          `$&#123;mongodb.port&#125;/`     +</span><br><span class="line">                          `$&#123;mongodb.database&#125;`  +</span><br><span class="line">                          &#x27;?server_selection_timeout=10&#x27;;</span><br><span class="line">      &#125;</span><br><span class="line">      case &#x27;staging&#x27;: &#123;</span><br><span class="line">        const mongodb = &#123;</span><br><span class="line">          host: &#x27;*.*.*.*&#x27;,</span><br><span class="line">          port: &#x27;8889&#x27;,</span><br><span class="line">          database: &#x27;jackhancloud&#x27;,</span><br><span class="line">          user: &#x27;jackhan&#x27;,</span><br><span class="line">          password: &#x27;********&#x27;,</span><br><span class="line">          session_name: &#x27;master&#x27;</span><br><span class="line">        &#125;;</span><br><span class="line">        return `mongodb://$&#123;mongodb.user&#125;:`       +</span><br><span class="line">                          `$&#123;mongodb.password&#125;@`  +</span><br><span class="line">                          `$&#123;mongodb.host_stag&#125;:` +</span><br><span class="line">                          `$&#123;mongodb.port&#125;/`      +</span><br><span class="line">                          `$&#123;mongodb.database&#125;`   +</span><br><span class="line">                          &#x27;?server_selection_timeout=10&#x27;;</span><br><span class="line">      &#125;</span><br><span class="line">      case &#x27;production&#x27;: &#123;</span><br><span class="line">        const mongodb = &#123;</span><br><span class="line">          host: &#x27;*.*.*.*&#x27;,</span><br><span class="line">          port: &#x27;8890&#x27;,</span><br><span class="line">          database: &#x27;jackhancloud&#x27;,</span><br><span class="line">        &#125;</span><br><span class="line">        return `mongodb://$&#123;mongodb.host&#125;:`     +</span><br><span class="line">                          `$&#123;mongodb.port&#125;/`    +</span><br><span class="line">                          `$&#123;mongodb.database&#125;` +</span><br><span class="line">                          &#x27;?server_selection_timeout=10&#x27;;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line"></span><br><span class="line">  //redis</span><br><span class="line">  redis: &#123;</span><br><span class="line">    port: 6379,</span><br><span class="line">    host: &#x27;127.0.0.1&#x27;</span><br><span class="line">  &#125;,</span><br><span class="line"></span><br><span class="line">  db: &#123;</span><br><span class="line">    redisClient: null,</span><br><span class="line">    mongoose: null</span><br><span class="line">  &#125;,</span><br><span class="line"></span><br><span class="line">  //应用配置</span><br><span class="line">  app: function() &#123;</span><br><span class="line">    switch (this.NODE_ENV) &#123;</span><br><span class="line">      case &#x27;development&#x27;: &#123;</span><br><span class="line">        return &#123;</span><br><span class="line">          cropId: &#x27;***********&#x27;,</span><br><span class="line">          suiteId: &#x27;***********&#x27;,</span><br><span class="line">          suitSecret: &#x27;***********&#x27;,</span><br><span class="line">          token: &#x27;***********&#x27;,</span><br><span class="line">          encodingAESKey: &#x27;***********&#x27;,</span><br><span class="line">          indexCallBack: &#x27;http://***********/api/v1/login/callback&#x27;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      case &#x27;staging&#x27;: &#123;</span><br><span class="line">        return &#123;</span><br><span class="line">          cropId: &#x27;**********&#x27;,</span><br><span class="line">          suiteId: &#x27;**********&#x27;,</span><br><span class="line">          suitSecret: &#x27;**********&#x27;,</span><br><span class="line">          token: &#x27;**********&#x27;,</span><br><span class="line">          encodingAESKey: &#x27;**********&#x27;,</span><br><span class="line">          indexCallBack: &#x27;http://***********/api/v1/login/callback&#x27;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      case &#x27;production&#x27;: &#123;</span><br><span class="line">        return &#123;</span><br><span class="line">          cropId: &#x27;***********&#x27;,</span><br><span class="line">          suiteId: &#x27;***********&#x27;,</span><br><span class="line">          suitSecret: &#x27;***********&#x27;,</span><br><span class="line">          token: &#x27;***********&#x27;,</span><br><span class="line">          encodingAESKey: &#x27;***********&#x27;,</span><br><span class="line">          indexCallBack: &#x27;http://***********/api/v1/login/callback&#x27;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="路由及API"><a href="#路由及API" class="headerlink" title="路由及API"></a>路由及API</h1><p>路由的配置必不可少，在登录之前我们需要对其进行配置，利用wxCrypt进行加解密</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">var express = require(&#x27;express&#x27;);</span><br><span class="line">var config = require(&#x27;../conf/config&#x27;);</span><br><span class="line">var WxCrypt = require(&#x27;../until/wxCrypt&#x27;);</span><br><span class="line">var Message = require(&#x27;../auth/message&#x27;);</span><br><span class="line">var Logger = require(&#x27;../until/log&#x27;);</span><br><span class="line">const logger = Logger.init(&#x27;Router&#x27;);</span><br><span class="line"></span><br><span class="line">// 创建一个路由对象，此对象将会监听文件下的url</span><br><span class="line">var router = express.Router();</span><br><span class="line">//配置文件</span><br><span class="line">var appConf = config.app();</span><br><span class="line">//加密解密对像</span><br><span class="line">var wxCrypt = new WxCrypt(appConf.token, appConf.encodingAESKey, appConf.cropId);</span><br><span class="line"></span><br><span class="line">//设置跨域访问</span><br><span class="line">router.all(&#x27;*&#x27;, function(req, res, next) &#123;</span><br><span class="line">   res.header(&quot;Access-Control-Allow-Origin&quot;, &quot;*&quot;);</span><br><span class="line">   res.header(&quot;Access-Control-Allow-Headers&quot;, &quot;X-Requested-With&quot;);</span><br><span class="line">   res.header(&quot;Access-Control-Allow-Methods&quot;,&quot;PUT,POST,GET,DELETE,OPTIONS&quot;);</span><br><span class="line">   res.header(&quot;X-Powered-By&quot;, &#x27;3.2.1&#x27;);</span><br><span class="line">   res.header(&quot;Content-Type&quot;, &quot;application/json;charset=utf-8&quot;);</span><br><span class="line">   next();</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">//消息接收</span><br><span class="line">router.post(&#x27;/v1/auth/message&#x27;, function(req, res, next) &#123;</span><br><span class="line">  var suiteid = req.body.xml ? req.body.xml.tousername : &#x27;&#x27;;</span><br><span class="line">  var encrypt = req.body.xml ? req.body.xml.encrypt : &#x27;&#x27;;</span><br><span class="line">  var agentid = req.body.xml ? req.body.xml.agentid : &#x27;&#x27;;</span><br><span class="line">  var msg_signature = req.query.msg_signature;</span><br><span class="line">  var timestamp = req.query.timestamp;</span><br><span class="line">  var nonce =  req.query.nonce;</span><br><span class="line"></span><br><span class="line">  if (wxCrypt.getSignature(timestamp, nonce, encrypt) === msg_signature) &#123;</span><br><span class="line">    var cryptMsg = wxCrypt.decrypt(encrypt);</span><br><span class="line">    var message = new Message(cryptMsg);</span><br><span class="line">    var infoData = message.receiveMsgType();</span><br><span class="line">    res.status(200).send(&#x27;success&#x27;);</span><br><span class="line">  &#125; else &#123;</span><br><span class="line">    Logger.console(logger, &#x27;刷新suiteTicket失败&#x27;, &#x27;error&#x27;);</span><br><span class="line">    res.status(401).end();</span><br><span class="line">  &#125;</span><br><span class="line">  return;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>配置了路由对象之后需要对一些特殊的微信平台api进行分类对接，我们用axios来进行接口请求</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line">var axios = require(&#x27;axios&#x27;);</span><br><span class="line"></span><br><span class="line">const authApi = &#123;</span><br><span class="line"></span><br><span class="line">  /**</span><br><span class="line">  * 对返回结果的一层封装，如果遇见微信返回的错误，将返回一个错误</span><br><span class="line">  * 参见：http://mp.weixin.qq.com/wiki/index.php?title=返回码说明</span><br><span class="line">  */</span><br><span class="line">  wrapper: function(data) &#123;</span><br><span class="line">    if (data.errcode) &#123;</span><br><span class="line">      err = new Error();</span><br><span class="line">      err.name = &#x27;WeChatAPIError&#x27;;</span><br><span class="line">      err.errmsg = data.errmsg;</span><br><span class="line">      err.errcode = data.errcode;</span><br><span class="line">      return err;</span><br><span class="line">    &#125;</span><br><span class="line">    return data;</span><br><span class="line">  &#125;,</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">  get: function(url, cb) &#123;</span><br><span class="line">    axios(&#123;</span><br><span class="line">      url: url,</span><br><span class="line">      method: &#x27;get&#x27;,</span><br><span class="line">      headers: &#123;</span><br><span class="line">        &#x27;Content-Type&#x27;: &#x27;application/json&#x27;,</span><br><span class="line">        &#x27;Accept&#x27;: &#x27;application/json&#x27;,</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;).then(function (response) &#123;</span><br><span class="line">        cb &amp;&amp; cb(authApi.wrapper(response.data));</span><br><span class="line">        return;</span><br><span class="line">      &#125;)</span><br><span class="line">      .catch(function (error) &#123;</span><br><span class="line">        return error;</span><br><span class="line">      &#125;);</span><br><span class="line">  &#125;,</span><br><span class="line"></span><br><span class="line">  post: function(url, data, cb) &#123;</span><br><span class="line">    axios(&#123;</span><br><span class="line">      url: url,</span><br><span class="line">      method: &#x27;post&#x27;,</span><br><span class="line">      headers: &#123;</span><br><span class="line">        &#x27;Content-Type&#x27;: &#x27;application/json&#x27;,</span><br><span class="line">        &#x27;Accept&#x27;: &#x27;application/json&#x27;,</span><br><span class="line">      &#125;,</span><br><span class="line">      data: JSON.stringify(data)</span><br><span class="line">    &#125;).then(function (response) &#123;</span><br><span class="line">        cb &amp;&amp; cb(authApi.wrapper(response.data));</span><br><span class="line">        return;</span><br><span class="line">      &#125;)</span><br><span class="line">      .catch(function (error) &#123;</span><br><span class="line">        return error;</span><br><span class="line">      &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>企业微信API</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">const config = require(&#x27;../conf/config&#x27;);</span><br><span class="line"></span><br><span class="line">const url = &#123;</span><br><span class="line">  //获取suite_token</span><br><span class="line">  suiteToken: &#x27;https://qyapi.weixin.qq.com/cgi-bin/service/get_suite_token&#x27;,</span><br><span class="line"></span><br><span class="line">  //获取pre_auth_code</span><br><span class="line">  preAuthCode(suiteAccessToken) &#123;</span><br><span class="line">    return `https://qyapi.weixin.qq.com/cgi-bin/service/get_pre_auth_code?suite_access_token=$&#123;suiteAccessToken&#125;`</span><br><span class="line">  &#125;,</span><br><span class="line"></span><br><span class="line">  //授权配置</span><br><span class="line">  authConfig(suiteAccessToken) &#123;</span><br><span class="line">    return `https://qyapi.weixin.qq.com/cgi-bin/service/set_session_info?suite_access_token=$&#123;suiteAccessToken&#125;`</span><br><span class="line">  &#125;,</span><br><span class="line"></span><br><span class="line">  //获取permanent_code</span><br><span class="line">  permanentCode(suiteAccessToken) &#123;</span><br><span class="line">    return `https://qyapi.weixin.qq.com/cgi-bin/service/get_permanent_code?suite_access_token=$&#123;suiteAccessToken&#125;`</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="数据库连接与登录"><a href="#数据库连接与登录" class="headerlink" title="数据库连接与登录"></a>数据库连接与登录</h1><p>有了基本配置之后，我们开始连接数据库，连接mongodb和redis</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">var MOGO_CON_STR = config.mongodb();</span><br><span class="line">var redisClient = redis.createClient(config.redis);</span><br><span class="line"></span><br><span class="line">//连接mogodb数据库</span><br><span class="line">mongoose.connect(MOGO_CON_STR);</span><br><span class="line">//如果连接成功会执行open回调</span><br><span class="line">mongoose.connection.on(&#x27;open&#x27;, function () &#123;</span><br><span class="line">  Logger.console(logger, &#x27;mongo数据库连接成功 ===&gt; &#x27; + MOGO_CON_STR, &#x27;debug&#x27;);</span><br><span class="line">  config.db.mongoose = mongoose;</span><br><span class="line"></span><br><span class="line">  //wxapi</span><br><span class="line">  app.use(&#x27;/api&#x27;, require(&#x27;./routes/api&#x27;));</span><br><span class="line"></span><br><span class="line">  //auth登录</span><br><span class="line">  app.get(&#x27;/api/v1/login/authorize&#x27;, function(req, res, next) &#123;</span><br><span class="line">    var authLogin = new AuthLogin();</span><br><span class="line">    authLogin.getSuiteToken(function(response) &#123;</span><br><span class="line">      response &amp;&amp; response.errmsg ? res.send(response.errmsg) : response.callbackUri</span><br><span class="line">                                  ? res.redirect(response.callbackUri) : res.redirect(&#x27;/&#x27;);</span><br><span class="line">      return;</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line">  app.use(&#x27;/&#x27;, serveStatic(path.join(__dirname, &#x27;../build&#x27;)));</span><br><span class="line">  app.use(&#x27;/*&#x27;, serveStatic(path.join(__dirname, &#x27;../build/index.html&#x27;)));</span><br><span class="line"></span><br><span class="line">  app.listen(9040);</span><br><span class="line">&#125;);</span><br><span class="line">// 链接错误</span><br><span class="line">mongoose.connection.on(&#x27;error&#x27;, function(error) &#123;</span><br><span class="line">  Logger.console(logger, &#x27;数据库连接失败&#x27; + error, &#x27;error&#x27;);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">//redis数据库连接</span><br><span class="line">redisClient.on(&quot;ready&quot;, function(err) &#123;</span><br><span class="line">  if (err) return false;</span><br><span class="line">  Logger.console(logger, &#x27;redis数据库连接成功 ===&gt; port: 6379 host: 127.0.0.1&#x27;, &#x27;debug&#x27;);</span><br><span class="line">  config.db.redisClient = redisClient;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">redisClient.on(&quot;error&quot;, function (error) &#123;</span><br><span class="line">  Logger.console(logger, &#x27;redis数据库连接失败 port: &#x27; + error, &#x27;error&#x27;);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h1 id="单点登录"><a href="#单点登录" class="headerlink" title="单点登录"></a>单点登录</h1><p>连接数据库成功之后我们就开始进行单点登录的请求，为此我们需要建立一个authLogin的文件来处理登录事件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br></pre></td><td class="code"><pre><span class="line">var config = require(&#x27;../conf/config&#x27;);</span><br><span class="line">var url = require(&#x27;../routes/url&#x27;);</span><br><span class="line">var AuthApi = require(&#x27;../routes/authApi&#x27;);</span><br><span class="line">var Store = require(&#x27;../conf/store&#x27;);</span><br><span class="line">var Logger = require(&#x27;../until/log&#x27;);</span><br><span class="line">const logger = Logger.init(&#x27;AuthLogin&#x27;);</span><br><span class="line"></span><br><span class="line">class AuthLogin &#123;</span><br><span class="line">  constructor() &#123;</span><br><span class="line">    var confApp = config.app();</span><br><span class="line">    this.suiteId = confApp.suiteId;</span><br><span class="line">    this.indexCallback = confApp.indexCallBack;</span><br><span class="line">    this.suitSecret = confApp.suitSecret;</span><br><span class="line">    this.redisClient = config.db.redisClient;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  //获取并缓存suiteAccessToken</span><br><span class="line">  getSuiteToken(callback, permanentCode) &#123;</span><br><span class="line">    if (!this.redisClient) &#123;</span><br><span class="line">      callback &amp;&amp; callback(&#123;errmsg: &#x27;redis数据库连接失败...&#x27;&#125;);</span><br><span class="line">      return;</span><br><span class="line">    &#125;</span><br><span class="line">    this.callback = callback;</span><br><span class="line">    var self = this;</span><br><span class="line">    const suiteTicket = this.redisClient.get(&#x27;suite_ticket_&#x27; + this.suiteId, function(err, suiteTicket) &#123;</span><br><span class="line">      if (err) return false;</span><br><span class="line">      Logger.console(logger, &#x27;redisClient:suiteTicket ===&gt; &#x27; + suiteTicket, &#x27;verbose&#x27;);</span><br><span class="line">      const data = &#123;</span><br><span class="line">        suite_id: self.suiteId,</span><br><span class="line">        suite_secret: self.suitSecret,</span><br><span class="line">        suite_ticket: suiteTicket</span><br><span class="line">      &#125;</span><br><span class="line">      var accessTokenKey = `suite_access_token:$&#123;self.suiteId&#125;`;</span><br><span class="line">      self.redisClient.get(accessTokenKey, function(err, suiteAccessToken) &#123;</span><br><span class="line">        if (err) return false;</span><br><span class="line">        Logger.console(logger, &#x27;redisClient:suiteAccessToken ===&gt; &#x27; + suiteAccessToken, &#x27;verbose&#x27;);</span><br><span class="line">        if (suiteAccessToken) &#123;</span><br><span class="line">          permanentCode ? permanentCode(suiteAccessToken) : self.getPreAuthCode(suiteAccessToken);</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">          AuthApi.post(url.suiteToken, data, function(res) &#123;</span><br><span class="line">            if (res.errcode) &#123;</span><br><span class="line">              self.outputError(res.name, res.errcode, res.errmsg);</span><br><span class="line">            &#125; else &#123;</span><br><span class="line">              var suiteAccessToken = res.suite_access_token;</span><br><span class="line">              Logger.console(logger, &#x27;suiteAccessToken ===&gt; &#x27; + suiteAccessToken, &#x27;prompt&#x27;);</span><br><span class="line">              permanentCode ? permanentCode(suiteAccessToken) : self.getPreAuthCode(suiteAccessToken);</span><br><span class="line">              self.redisClient.set(accessTokenKey, suiteAccessToken);</span><br><span class="line">              self.redisClient.expire(accessTokenKey, 7200);</span><br><span class="line">            &#125;</span><br><span class="line">          &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  //获取预授权码</span><br><span class="line">  getPreAuthCode(suiteAccessToken) &#123;</span><br><span class="line">    var self = this;</span><br><span class="line">    AuthApi.get(url.preAuthCode(suiteAccessToken), function(res) &#123;</span><br><span class="line">      if (res.errcode) &#123;</span><br><span class="line">        self.outputError(res.name, res.errcode, res.errmsg);</span><br><span class="line">      &#125; else &#123;</span><br><span class="line">        var preAuthCode = res.pre_auth_code;</span><br><span class="line">        Logger.console(logger, &#x27;preAuthCode ===&gt; &#x27; + preAuthCode, &#x27;prompt&#x27;);</span><br><span class="line">        self.authConfig(preAuthCode, suiteAccessToken);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  //授权配置</span><br><span class="line">  authConfig(preAuthCode, suiteAccessToken) &#123;</span><br><span class="line">    var self = this;</span><br><span class="line">    const data = &#123;</span><br><span class="line">      pre_auth_code: preAuthCode,</span><br><span class="line">      session_info: &#123;</span><br><span class="line">        auth_type: config.NODE_ENV === &#x27;production&#x27; ? 0 : 1</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;;</span><br><span class="line">    AuthApi.post(url.authConfig(suiteAccessToken), data, function(res) &#123;</span><br><span class="line">      if (res.errcode) &#123;</span><br><span class="line">        self.outputError(res.name, res.errcode, res.errmsg);</span><br><span class="line">      &#125; else &#123;</span><br><span class="line">        Logger.console(logger, &#x27;======== 授权成功 ========&#x27;, &#x27;info&#x27;);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  //获取并缓存永久授权码</span><br><span class="line">  getPermanentCode(authCode) &#123;</span><br><span class="line">    var self = this;</span><br><span class="line">    this.getSuiteToken(null, function(suiteAccessToken) &#123;</span><br><span class="line">      console.log(url.permanentCode(suiteAccessToken));</span><br><span class="line">      AuthApi.post(url.permanentCode(suiteAccessToken), &#123;auth_code: authCode&#125;, function(res) &#123;</span><br><span class="line">        console.log(res);</span><br><span class="line">        if (res.errcode) &#123;</span><br><span class="line">          self.outputError(res.name, res.errcode, res.errmsg);</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">          console.log(res);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  //错误输出</span><br><span class="line">  outputError(name, errcode, errmsg) &#123;</span><br><span class="line">    var errStr = `$&#123;name&#125;($&#123;errcode&#125;): $&#123;errmsg&#125;`;</span><br><span class="line">    Logger.console(logger, errStr, &#x27;error&#x27;);</span><br><span class="line">    this.callback &amp;&amp; this.callback(&#123;errmsg: errStr&#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="消息接收"><a href="#消息接收" class="headerlink" title="消息接收"></a>消息接收</h1><p>单点登录时微信平台的第一步，也是最重要的一步，单点登录完成之后，我们来进行消息接收的配置，因为微信平台收到的参数需要用xml包装，所以我们用到了xml2js</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line">var config = require(&#x27;../conf/config&#x27;);</span><br><span class="line">var AuthLogin = require(&#x27;./authLogin&#x27;);</span><br><span class="line">var Store = require(&#x27;../conf/store&#x27;);</span><br><span class="line">var parseString = require(&#x27;xml2js&#x27;).parseString;</span><br><span class="line">var Logger = require(&#x27;../until/log&#x27;);</span><br><span class="line">const logger = Logger.init(&#x27;Message&#x27;);</span><br><span class="line"></span><br><span class="line">class Message &#123;</span><br><span class="line">  constructor(cryptMsg) &#123;</span><br><span class="line">    var self = this;</span><br><span class="line">    var xmlMessage = cryptMsg.message;</span><br><span class="line">    parseString(xmlMessage, function (err, result) &#123;</span><br><span class="line">      self.resultJson = result.xml;</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  receiveMsgType() &#123;</span><br><span class="line">    Logger.console(logger, &#x27;message ===&gt; &#x27; + JSON.stringify(this.resultJson), &#x27;prompt&#x27;);</span><br><span class="line">    var infoType = this.resultJson.InfoType &amp;&amp; this.resultJson.InfoType[0];</span><br><span class="line">    var msgType = this.resultJson.MsgType &amp;&amp; this.resultJson.MsgType[0];</span><br><span class="line">    switch (infoType || msgType) &#123;</span><br><span class="line">      case &#x27;suite_ticket&#x27;:</span><br><span class="line">        this.saveSuiteTicket();</span><br><span class="line">        break;</span><br><span class="line">      case &#x27;create_auth&#x27;:</span><br><span class="line">        this.getPermanentCodeByAuthCode();</span><br><span class="line">        break;</span><br><span class="line">      case &#x27;cancel_auth&#x27;:</span><br><span class="line">        break;</span><br><span class="line">      case &#x27;change_contact&#x27;:</span><br><span class="line">        break;</span><br><span class="line">      case &#x27;event&#x27;:</span><br><span class="line">        this.saveEventInfo();</span><br><span class="line">        break;</span><br><span class="line">      default:</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  //获取并缓存suiteTicket</span><br><span class="line">  saveSuiteTicket() &#123;</span><br><span class="line">    var suiteTicket = this.resultJson.SuiteTicket[0];</span><br><span class="line">    var suiteid = this.resultJson.SuiteId[0];</span><br><span class="line">    const redisClient = config.db.redisClient;</span><br><span class="line">    redisClient.set(&#x27;suite_ticket_&#x27; + suiteid, suiteTicket);</span><br><span class="line">    Logger.console(logger, &#x27;suiteTicket ===&gt; &#x27; + suiteTicket, &#x27;prompt&#x27;);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  //获取并缓存event信息</span><br><span class="line">  saveEventInfo() &#123;</span><br><span class="line">    var toUserName = this.resultJson.ToUserName[0];</span><br><span class="line">    var fromUserName = this.resultJson.FromUserName[0];</span><br><span class="line">    var agentId = this.resultJson.AgentID[0];</span><br><span class="line">    Store.save(&#x27;eventInfo&#x27;, &#123;toUserName: toUserName, fromUserName: fromUserName, agentId: agentId&#125;);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  //使用auth_code换取永久授权码并缓存</span><br><span class="line">  getPermanentCodeByAuthCode() &#123;</span><br><span class="line">    var authCode = this.resultJson.AuthCode[0];</span><br><span class="line">    Logger.console(logger, &#x27;auth_code ===&gt; &#x27; + authCode, &#x27;prompt&#x27;);</span><br><span class="line">    var authLogin = new AuthLogin();</span><br><span class="line">    authLogin.getPermanentCode(authCode);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>处理到这一步之后，我们已经能正常进行消息的接收，于此同时因为一些数据需要与后端业务进行交互，所以我们在之后需要进行一些接口调用，接下来就是正常的业务开发及API拓展。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/06/05/webpack-backbone-react/" rel="prev" title="前端 Webpack + Backbone + React 项目环境集成">
+      <i class="fa fa-chevron-left"></i> 前端 Webpack + Backbone + React 项目环境集成
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/09/01/ngrok/" rel="next" title="Ngrok配置内网穿透服务">
+      Ngrok配置内网穿透服务 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96%E5%8F%8A%E4%BE%9D%E8%B5%96%E5%8C%85"><span class="nav-number">1.</span> <span class="nav-text">初始化及依赖包</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%AC%E5%85%B1%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="nav-number">2.</span> <span class="nav-text">公共配置文件</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%B7%AF%E7%94%B1%E5%8F%8AAPI"><span class="nav-number">3.</span> <span class="nav-text">路由及API</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E4%B8%8E%E7%99%BB%E5%BD%95"><span class="nav-number">4.</span> <span class="nav-text">数据库连接与登录</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8D%95%E7%82%B9%E7%99%BB%E5%BD%95"><span class="nav-number">5.</span> <span class="nav-text">单点登录</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E6%8E%A5%E6%94%B6"><span class="nav-number">6.</span> <span class="nav-text">消息接收</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="hr"
+      src="/images/lufei.gif">
+  <p class="site-author-name" itemprop="name">hr</p>
+  <div class="site-description" itemprop="description">记录个人的点点滴滴</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/JackHan-hr" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;JackHan-hr" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:jackhan11108@139.com" title="E-Mail → mailto:jackhan11108@139.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">hr</span>
+</div>
+  <div class="powered-by">相逢有缘 | 有缘再见
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+  <script type="text/javascript" color="255,0,0" count="99" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+</body>
+</html>

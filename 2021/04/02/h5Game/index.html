@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"huangru.coding.net","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="H5游戏主要是基于HTMl实现的一种在webview上面进行游戏的网页游戏。它的优势是能够跨平台、敏捷实现、便于营销与推广，当然其劣势也很明显，虽然现在前端浏览器性能与其支持性越来越突出与卓越，但还是无法完全达到端游的流畅与性能体验。但是这并不影响它的越来越受欢迎，未来随着浏览器性能的逐渐提高，H5游戏将会变得更加广泛。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="利用Canvas实现H5动画游戏">
+<meta property="og:url" content="https://huangru.coding.net/2021/04/02/h5Game/index.html">
+<meta property="og:site_name" content="JackHan">
+<meta property="og:description" content="H5游戏主要是基于HTMl实现的一种在webview上面进行游戏的网页游戏。它的优势是能够跨平台、敏捷实现、便于营销与推广，当然其劣势也很明显，虽然现在前端浏览器性能与其支持性越来越突出与卓越，但还是无法完全达到端游的流畅与性能体验。但是这并不影响它的越来越受欢迎，未来随着浏览器性能的逐渐提高，H5游戏将会变得更加广泛。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://huangru.coding.net/images/boat-move-path.jpeg">
+<meta property="og:image" content="https://huangru.coding.net/images/besaier2.gif">
+<meta property="og:image" content="https://huangru.coding.net/images/guide.png">
+<meta property="article:published_time" content="2021-04-02T07:30:00.000Z">
+<meta property="article:modified_time" content="2022-02-24T07:32:33.553Z">
+<meta property="article:author" content="hr">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://huangru.coding.net/images/boat-move-path.jpeg">
+
+<link rel="canonical" href="https://huangru.coding.net/2021/04/02/h5Game/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>利用Canvas实现H5动画游戏 | JackHan</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">JackHan</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://huangru.coding.net/2021/04/02/h5Game/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/lufei.gif">
+      <meta itemprop="name" content="hr">
+      <meta itemprop="description" content="记录个人的点点滴滴">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="JackHan">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          利用Canvas实现H5动画游戏
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-04-02 15:30:00" itemprop="dateCreated datePublished" datetime="2021-04-02T15:30:00+08:00">2021-04-02</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-02-24 15:32:33" itemprop="dateModified" datetime="2022-02-24T15:32:33+08:00">2022-02-24</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/WEB/" itemprop="url" rel="index"><span itemprop="name">WEB</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>H5游戏主要是基于HTMl实现的一种在webview上面进行游戏的网页游戏。它的优势是能够跨平台、敏捷实现、便于营销与推广，当然其劣势也很明显，虽然现在前端浏览器性能与其支持性越来越突出与卓越，但还是无法完全达到端游的流畅与性能体验。但是这并不影响它的越来越受欢迎，未来随着浏览器性能的逐渐提高，H5游戏将会变得更加广泛。</p>
+<span id="more"></span>
+
+<h1 id="实现思路"><a href="#实现思路" class="headerlink" title="实现思路"></a>实现思路</h1><p>.<br>无论是2d游戏还是3d游戏，通常我们使用Canvas来实现这类H5游戏，当然3d游戏主要是使用WebGL，这里我们主要是来说说关于一些基本的2d类H5游戏的实现思路。</p>
+<h1 id="核心"><a href="#核心" class="headerlink" title="核心"></a>核心</h1><p>.<br>在Web应用中，实现动画效果的方法比较多，Javascript 中可以通过定时器 setTimeout或者setInterval 来实现，css3 可以使用 transition 和 animation 来实现，html5 中的 canvas 也可以实现。除此之外，html5 还提供一个专门用于请求动画的API，那就是 requestAnimationFrame，顾名思义就是请求动画帧。</p>
+<p>但是传统的通过setTimeout或者setInterval实现的动画，存在两个问题，第一个就是动画的循时间环间隔不好确定，设置长了动画显得不够平滑流畅，设置短了浏览器的重绘频率会达到瓶颈，推荐的最佳循环间隔是17ms（大多数电脑的显示器刷新频率是60Hz, 1000ms &#x2F; 60）,第二个问题是定时器第二个时间参数只是指定了多久后将动画任务添加到浏览器的UI线程队列中，如果UI线程处于忙碌状态，那么动画不会立刻执行，为了解决这个问题，所以H5中才有了requestAnimationFrame。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (!window.requestAnimationFrame) &#123;</span><br><span class="line">    window.requestAnimationFrame = (</span><br><span class="line">    window.webkitRequestAnimationFrame ||</span><br><span class="line">    window.mozRequestAnimationFrame ||</span><br><span class="line">    window.oRequestAnimationFrame ||</span><br><span class="line">    window.msRequestAnimationFrame ||</span><br><span class="line">    <span class="keyword">function</span>(callback) &#123;</span><br><span class="line">      <span class="built_in">return</span> window.setTimeout(callback, 1000 / 60); </span><br><span class="line">    &#125;</span><br><span class="line">  );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="触摸"><a href="#触摸" class="headerlink" title="触摸"></a>触摸</h1><p>.<br>既然是游戏，那么我们就必须要有触摸事件，不同的端触摸的方式不一样所以这里我们需要拿到触摸坐标。</p>
+<p>PC上捕获坐标：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">var captureMouse = <span class="keyword">function</span>(element) &#123;</span><br><span class="line">  var mouse = &#123; x: 0, y: 0 &#125;;</span><br><span class="line">    </span><br><span class="line">  element.addEventListener(<span class="string">&#x27;mousemove&#x27;</span>, <span class="keyword">function</span>(event) &#123;</span><br><span class="line">    var x,y;</span><br><span class="line">    <span class="keyword">if</span> (event.pageX || event.pageY) &#123;</span><br><span class="line">      x = event.pageX;</span><br><span class="line">      y = event.pageY;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;</span><br><span class="line">      y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    x -= element.offsetLeft;</span><br><span class="line">    y -= element.offsetTop;</span><br><span class="line">    </span><br><span class="line">    mouse.x = x;</span><br><span class="line">    mouse.y = y;          </span><br><span class="line">  &#125;, <span class="literal">false</span>);</span><br><span class="line">    </span><br><span class="line">  <span class="built_in">return</span> mouse;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Mobile上捕获坐标：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">var captureTouch = <span class="keyword">function</span>(element) &#123;</span><br><span class="line">  var <span class="built_in">touch</span> = &#123; x: null, y: null, isPressed: <span class="literal">false</span>, event: null &#125;,</span><br><span class="line">      body_scrollLeft = document.body.scrollLeft,</span><br><span class="line">      element_scrollLeft = document.documentElement.scrollLeft,</span><br><span class="line">      body_scrollTop = document.body.scrollTop,</span><br><span class="line">      element_scrollTop = document.documentElement.scrollTop,</span><br><span class="line">      offsetLeft = element.offsetLeft,</span><br><span class="line">      offsetTop = element.offsetTop;</span><br><span class="line"></span><br><span class="line">  element.addEventListener(<span class="string">&#x27;touchstart&#x27;</span>, <span class="keyword">function</span>(event) &#123;</span><br><span class="line">    touch.isPressed = <span class="literal">true</span>;</span><br><span class="line">    touch.event = event;</span><br><span class="line">  &#125;, <span class="literal">false</span>);</span><br><span class="line"></span><br><span class="line">  element.addEventListener(<span class="string">&#x27;touchend&#x27;</span>, <span class="keyword">function</span>(event) &#123;</span><br><span class="line">    touch.isPressed = <span class="literal">false</span>;</span><br><span class="line">    touch.x = null;</span><br><span class="line">    touch.y = null;</span><br><span class="line">    touch.event = event;</span><br><span class="line">  &#125;, <span class="literal">false</span>);</span><br><span class="line">  </span><br><span class="line">  element.addEventListener(<span class="string">&#x27;touchmove&#x27;</span>, <span class="keyword">function</span>(event) &#123;</span><br><span class="line">    var x, y,</span><br><span class="line">        touch_event = event.touches[0]; // 首次触摸</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (touch_event.pageX || touch_event.pageY) &#123;</span><br><span class="line">      x = touch_event.pageX;</span><br><span class="line">      y = touch_event.pageY;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      x = touch_event.clientX + body_scrollLeft + element_scrollLeft;</span><br><span class="line">      y = touch_event.clientY + body_scrollTop + element_scrollTop;</span><br><span class="line">    &#125;</span><br><span class="line">    x -= offsetLeft;</span><br><span class="line">    y -= offsetTop;</span><br><span class="line">    </span><br><span class="line">    touch.x = x;</span><br><span class="line">    touch.y = y;</span><br><span class="line">    touch.event = event;</span><br><span class="line">  &#125;, <span class="literal">false</span>);</span><br><span class="line">  </span><br><span class="line">  <span class="built_in">return</span> <span class="built_in">touch</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h1 id="Canvas"><a href="#Canvas" class="headerlink" title="Canvas"></a>Canvas</h1><p>.<br>说到Canvas相信很多人都不陌生，我们经常使用Canvas来绘制一些图形，像绘制矩形，我们使用fillRect，绘制圆形，我们使用arc，绘制线条我们使用path等等。接下来我们开始使用Canvas做一个船移动路径动画游戏。</p>
+<p>1、获取画布</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">const context = canvas.getContext(<span class="string">&#x27;2d&#x27;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>2、添加背景</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">context.draw(bgImage, 0, 0, canvas.width, canvas.height);</span><br><span class="line">context.draw(boatImage, 0, 0, canvas.width, canvas.height);</span><br></pre></td></tr></table></figure>
+
+<p>有了背景之后，我们再用同样的方式将船也绘制到背景上。绘制的过程，我们需要将其放在requestAnimationFrame中执行</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">(<span class="keyword">function</span> <span class="function"><span class="title">drawFrame</span></span>()&#123;</span><br><span class="line">    window.requestAnimationFrame(drawFrame, canvas);</span><br><span class="line">    context.clearRect(0, 0, canvas.width, canvas.height);</span><br><span class="line">    </span><br><span class="line">    context.draw(bgImage, 0, 0, canvas.width, canvas.height);</span><br><span class="line">&#125;())</span><br></pre></td></tr></table></figure>
+
+<p>当然船的绘制我们需要注意船的起始坐标，我们需要先给船一个起始坐标，这里主要是船相对于背景来说所在的位置</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">const wratio = xx; </span><br><span class="line">const hratio = xx; </span><br><span class="line">// 注意：这是个需要适配机型的系数, 不同宽高的尺寸，船相对于背景所在的位置是不一样的，所以我们需要用这个系数来做微调。</span><br><span class="line">const x = screenWidth / wratio - boatWidth / 2;</span><br><span class="line">const y = screenHeight / hratio - boatHeight / 2;</span><br></pre></td></tr></table></figure>
+
+<p>这样船相对于背景的起始坐标，我们就拿到了，我们还需要拿到船的终点坐标，终点坐标同样是相对于背景来说的，所以同样需要进行微调。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">const ex = scrrenWidth / 2 - boatWidth;</span><br><span class="line">const ey = bgh * hratio;</span><br></pre></td></tr></table></figure>
+
+<p>有了起始坐标和终点坐标，那么我们就可以绘制船到背景上</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">(<span class="keyword">function</span> <span class="function"><span class="title">drawFrame</span></span>()&#123;</span><br><span class="line">    window.requestAnimationFrame(drawFrame, canvas);</span><br><span class="line">    context.clearRect(0, 0, canvas.width, canvas.height);</span><br><span class="line">    </span><br><span class="line">    context.draw(bgImage, 0, 0, canvas.width, canvas.height);</span><br><span class="line">    context.draw(boatImage, x, y, boat.width, boat.height);</span><br><span class="line">&#125;())</span><br></pre></td></tr></table></figure>
+
+<p>这样船与背景都被绘制出来了，但是仅仅是这样还不够的，这只是一个静态图，同时我们还需要处理绘制出的背景的清晰度问题，同时我们还需要控制canvas宽高仅仅只为一个屏幕的宽高，所以我们需要在这里处理一下。</p>
+<h1 id="设备像素比显示高清背景"><a href="#设备像素比显示高清背景" class="headerlink" title="设备像素比显示高清背景"></a>设备像素比显示高清背景</h1><p>.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">const devicePixelRatio = <span class="keyword">function</span>(context) &#123;</span><br><span class="line">  const backingStore = </span><br><span class="line">    context.backingStorePixelRatio ||</span><br><span class="line">    context.webkitBackingStorePixelRatio ||</span><br><span class="line">    context.mozBackingStorePixelRatio ||</span><br><span class="line">    conext.msBackingStorePixelRatio ||</span><br><span class="line">    conext.oBackingStorePixelRatio ||</span><br><span class="line">    conext.backingStorePixelRatio ||</span><br><span class="line">    1;</span><br><span class="line">  </span><br><span class="line">  <span class="built_in">return</span> (window.devicePixelRatio || 1) / backingStore;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">const pxratio = devicePixelRatio(offCanvas.getContext(<span class="string">&#x27;2d&#x27;</span>)); // 设备像素比</span><br><span class="line"></span><br><span class="line">canvas.width * pxratio</span><br><span class="line">canvas.height * pxratio</span><br></pre></td></tr></table></figure>
+<p>注：offCanvas，离屏Canvas。</p>
+<p>非离屏渲染是不建立渲染缓冲区的，直接在屏幕上逐个进行绘制，需要重复利用canvas的api。当粒子数量到达一定等级时，性能上会受到较大影响。离屏canvas在屏幕渲染的时候开辟一个缓冲区，将当前需要加载的动画事先在缓冲区渲染完成之后，再显示到屏幕上已到达渲染性能的优化。</p>
+<p>生成离屏canvas：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27;offscreenCanvas&#x27;</span> <span class="keyword">in</span> window &amp;&amp; canvas.transferControlToOffscreen();</span><br></pre></td></tr></table></figure>
+
+<p>离屏Canvas是不具备canvas元素的样式属性的，它仅仅继承了canvas的 Width 和 Height属性，你可以将它看成是一个Canvas的缓冲镜像。</p>
+<p>接下来，按照设备像素比扩大了canvas的宽高之后，我们还需要对画布进行扩大！</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">context.scale(pxratio, pxratio);</span><br></pre></td></tr></table></figure>
+
+<p>这样一来整个canvas都按照设备像素比进行了等比放大，那么接下来要保证canvas能在一屏幕中展示，并不失真就需要再进行一次矩阵转换。这里我们是用的设备像素比放大，那么同理就用设备像素比进行矩阵缩放。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">canvas.style.transform = `matrix(<span class="variable">$&#123;1 / pxratixo&#125;</span>, 0, 0, <span class="variable">$&#123;1 / pxratio&#125;</span>, 0, 0)`;</span><br></pre></td></tr></table></figure>
+
+<p>matrix 定义 2D 转换，使用六个值的矩阵。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">「                              「</span><br><span class="line">  1, 0, 0         也就是          a, c, e </span><br><span class="line">  0, 1, 0         ======&gt;        b, d, f        ====      (ax + cy + e, bx + dy + f, 1)</span><br><span class="line">  0, 0, 1                        0, 0, 1</span><br><span class="line">         」                              」</span><br></pre></td></tr></table></figure>
+
+<p>到这一步内容的绘制就基本完成了，接下来就是考虑如何将内容以及操作联动起来！但是在这之前，我们得先计算好整个移动轨迹，如下图。</p>
+<p><img src="/images/boat-move-path.jpeg"></p>
+<h1 id="矢量计算"><a href="#矢量计算" class="headerlink" title="矢量计算"></a>矢量计算</h1><p>.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">t0 = t1 + t2</span><br><span class="line"></span><br><span class="line">s1 = (dragY1 / tanθ2 | dragY1 * cotθ2)  // 临边</span><br><span class="line">s2 = (dragY1 * sinθ1 | dragY1 * cosθ2)  // 斜边</span><br><span class="line"></span><br><span class="line">中间点：(x - s1, dragy)</span><br></pre></td></tr></table></figure>
+
+<p>这里我们计算出了中间点，那么就可以用二次贝塞尔曲线来进行坐标定位，如图：</p>
+<p><img src="/images/besaier2.gif"></p>
+<p>这里需要注意的是贝塞尔在移动过程中是不会触及顶点的，所以我们需要再对中间点进行扩充，也就是误差调试。在已有的中间点基础上将x轴往左偏移得到x’。接下来就是套用公式：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">const quadraticBezier = <span class="keyword">function</span>(p0, p1, p2, t) &#123;</span><br><span class="line">  <span class="built_in">return</span> k * k * p0 + 2 * (1 - t) * t * p1 + t * t * p2;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>那么问题来了，我们这里涉及到t，那么t我们该如何计算呢？答案当然是用拖动距离与总距的比值来计算，这里精确到ms级。如下图：</p>
+<p><img src="/images/guide.png"></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">percent1 = dragy / ty1; // 第一段移动过程</span><br><span class="line">percent2 = dragy / ty2; // 第二段移动过程</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span>(<span class="built_in">let</span> t = 0, t &lt; percent, t += 0.001) &#123;</span><br><span class="line">  const x = quadraticBezier(startP0X, middleP1X, endP2X, t);</span><br><span class="line">  const y = quadraticBezier(startP0Y, middleP1Y, endP2Y, t);</span><br><span class="line">  console.log(x, y);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>好了移动计算搞定，那么我们就需要着手拖动了，上面介绍了拖动的坐标捕获，但是仅仅是这样还不够的，我们还需要对坐标进行处理。</p>
+<p>首先要获取拖动距离即dragY，拖动分为向上和向下，拖动也不能超出边界，拖动完成后还需要考虑拖动速度，涉及到速度就又需要考虑到拖动缓冲移动所以就需要配置拖动的摩擦系数，防止无限加速。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">// touchstart中定义</span><br><span class="line"></span><br><span class="line">const h = offsetY - dragY;</span><br><span class="line"></span><br><span class="line">// touchmove中定义</span><br><span class="line"></span><br><span class="line">dragY = offsetY - h; // 拖动距离</span><br><span class="line"></span><br><span class="line">// 定义当前拖动距离大于0为加速，小于0为减速</span><br><span class="line">speed = dragY - lastDragY; </span><br><span class="line"></span><br><span class="line">// 最终拖动导致的移动距离为</span><br><span class="line">dragY += speed;</span><br><span class="line"></span><br><span class="line">// 加入摩擦系数</span><br><span class="line">speed *= fl; // fl值越小缓冲距离越短，即摩擦越大</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>以上基本就是实现拖动移动路径动画游戏的基本思路，这里是使用的二次贝塞尔曲线，如果要想达到移动路径更完美受控，使用一次贝塞尔曲线更好，但是这样一来需要计算内容就更多了。。。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/09/01/ngrok/" rel="prev" title="Ngrok配置内网穿透服务">
+      <i class="fa fa-chevron-left"></i> Ngrok配置内网穿透服务
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0%E6%80%9D%E8%B7%AF"><span class="nav-number">1.</span> <span class="nav-text">实现思路</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A0%B8%E5%BF%83"><span class="nav-number">2.</span> <span class="nav-text">核心</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%A7%A6%E6%91%B8"><span class="nav-number">3.</span> <span class="nav-text">触摸</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Canvas"><span class="nav-number">4.</span> <span class="nav-text">Canvas</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%AE%BE%E5%A4%87%E5%83%8F%E7%B4%A0%E6%AF%94%E6%98%BE%E7%A4%BA%E9%AB%98%E6%B8%85%E8%83%8C%E6%99%AF"><span class="nav-number">5.</span> <span class="nav-text">设备像素比显示高清背景</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%9F%A2%E9%87%8F%E8%AE%A1%E7%AE%97"><span class="nav-number">6.</span> <span class="nav-text">矢量计算</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="hr"
+      src="/images/lufei.gif">
+  <p class="site-author-name" itemprop="name">hr</p>
+  <div class="site-description" itemprop="description">记录个人的点点滴滴</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/JackHan-hr" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;JackHan-hr" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:jackhan11108@139.com" title="E-Mail → mailto:jackhan11108@139.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">hr</span>
+</div>
+  <div class="powered-by">相逢有缘 | 有缘再见
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+  <script type="text/javascript" color="255,0,0" count="99" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+</body>
+</html>
